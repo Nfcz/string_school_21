@@ -1,0 +1,3551 @@
+
+#include "test.h"
+
+#suite strlen
+#test test_s21_strlen_no_symbols
+    char test[10] = "";
+    ck_assert_uint_eq(s21_strlen(test), strlen(test));
+
+#test test_s21_strlen_all_symbols
+    char test[128];
+    for (int i = 0; i < 127; i++) 
+    {
+        test[i] = i+1;
+    }
+    test[127] = '\0';
+    ck_assert_uint_eq(s21_strlen(test), strlen(test));
+
+#test test_s21_strlen_large_string
+    srand(time(NULL));
+    char test[4096];
+    for (int i = 0; i <= 4094; i++)
+        test[i] = rand() % 128;
+    test[4095] = '\0';
+    ck_assert_uint_eq(s21_strlen(test), strlen(test));
+
+
+#suite memchr
+
+#test test_s21_memchr_empty_string
+    char test[10] = "";
+    char a = 'a';
+    ck_assert_pstr_eq(s21_memchr(test, a, 2), memchr(test, a, 2));
+
+#test test_s21_memchr_not_exist_symbol
+    char test[128];
+    for (int i = 0; i < 127; i++) 
+    {
+        test[i] = i+1;
+        if (test[i] == 'a')
+            test[i] = 'b';
+    }
+    test[127] = '\0';
+    ck_assert_pstr_eq(s21_memchr(test, 'a', 128), memchr(test, 'a', 128));
+
+#test test_s21_memchr_some_symbols
+    char test[100] = "qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrewqQWERTYUIOPAAASDFGHJKLZAXCVABNMMNBVCXZLAKJHGFDSA";
+    ck_assert_pstr_eq(s21_memchr(test, 'A', 100), memchr(test, 'A', 100));
+
+#test test_s21_memchr_no_symbol_in_n_bytes
+    char test[100] = "qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrewqQWERTYUIOPAAASDFGHJKLZAXCVABNMMNBVCXZLAKJHGFDSA";
+    ck_assert_pstr_eq(s21_memchr(test, 'm', 25), memchr(test, 'm', 25));
+
+#test test_s21_memchr_symbol_in_large_string
+    srand(time(NULL));
+    char test[4096];
+    for (int i = 0; i <= 4094; i++)
+        test[i] = rand() % 128;
+    test[4095] = '\0';
+    ck_assert_pstr_eq(s21_memchr(test, 'A', 100), memchr(test, 'A', 100));
+
+
+#suite memcmp
+
+#test test_s21_memcmp_empty_strings
+    char test1[1] = "";
+    char test2[1] = "";
+    ck_assert_int_eq(s21_memcmp(test1, test2, 1), memcmp(test1, test2, 1));
+
+#test test_s21_memcmp_different_length
+    char test1[128];
+    char test2[129];
+    for (int i = 0; i <= 127; i++) 
+    {
+        test1[i] = i;
+    }
+    
+    for (int i = 0; i <= 127; i++) 
+    {
+        test2[i] = test1[i];
+    }
+    test2[128] = 'q';
+
+    ck_assert_int_eq(s21_memcmp(test1, test2, 128), memcmp(test1, test2, 128));
+
+#test test_s21_memcmp_empty_and_not_empty_strings
+    char test1[128];
+    char test2[1] = "";
+    for (int i = 0; i < 127; i++) 
+    {
+        test1[i] = i+1;
+    }
+    test1[127] = '\0';
+   ck_assert_int_eq(s21_memcmp(test1, test2, 1), memcmp(test1, test2, 1));
+
+#test test_s21_memcmp_same_strings
+    srand(time(NULL));
+    char test1[128];
+    char test2[128];
+    s21_size_t n = 1 + rand() % 128;
+    for (int i = 0; i < 127; i++) 
+    {
+        test1[i] = i+1;
+    }
+    test1[127] = '\0';
+    for (int i = 0; i < 128; i++) 
+    {
+        test2[i] = test1[i];
+    }
+    ck_assert_int_eq(s21_memcmp(test1, test2, n), memcmp(test1, test2, n));
+
+#test test_s21_memcmp_comparison_large_strings
+    srand(time(NULL));
+    char test1[4096];
+    char test2[4096];
+    for (int i = 0; i < 4095; i++)
+        test1[i] = rand() % 128;
+    test1[4095] = '\0';
+
+    for (int i = 0; i < 4095; i++)
+        test2[i] = rand() % 128;
+    test2[4095] = '\0';
+
+
+    ck_assert_int_eq(s21_memcmp(test1, test2, 4096), memcmp(test1, test2, 4096));
+
+
+
+#suite memcpy
+
+#test test_s21_memcpy_src_is_empty_string
+    char test1[2] = "3";
+    char test2[2] = "3";
+    char test3[2] = "\0";
+
+    s21_memcpy(test1, test3, 2);
+    memcpy(test2, test3, 2);
+
+   ck_assert_str_eq(test1, test2);
+
+#test test_s21_memcpy_different_length
+    srand(time(NULL));
+    char test1[128];
+    char test2[128];
+    char test3[20] = "Hello, world!";
+    s21_size_t n = 1 + rand() % 20;
+
+    for (int i = 0; i < 127; i++) 
+    {
+        test1[i] = rand() % 128;
+    }
+    test1[127] = '\0';
+
+    for (int i = 0; i < 128; i++) 
+    {
+        test2[i] = test1[i];
+    }
+
+    s21_memcpy(test1, test3, n);
+    memcpy(test2, test3, n);
+
+    ck_assert_str_eq(test1, test2);
+
+#test test_s21_memcpy_n_eq_0
+    srand(time(NULL));
+    char test1[128];
+    char test2[128];
+    char test3[20] = "Hello, world!";
+
+    for (int i = 0; i < 127; i++) 
+    {
+        test1[i] = rand() % 128;
+    }
+    test1[127] = '\0';
+
+    for (int i = 0; i < 128; i++) 
+    {
+        test2[i] = test1[i];
+    }
+
+    s21_memcpy(test1, test3, 0);
+    memcpy(test2, test3, 0);
+
+    ck_assert_str_eq(test1, test2);
+
+#test test_s21_memcpy_same_strings_with_nulls
+    srand(time(NULL));
+    char test1[128];
+    char test2[128];
+    char test3[20] = "Hello, world!\0\0\0\0\0\0";
+
+    for (int i = 0; i < 127; i++) 
+    {
+        test1[i] = rand() % 128;
+    }
+    test1[127] = '\0';
+
+    for (int i = 0; i < 128; i++) 
+    {
+        test2[i] = test1[i];
+    }
+
+    s21_memcpy(test1, test3, 20);
+    memcpy(test2, test3, 20);
+
+    ck_assert_str_eq(test1, test2);
+
+#test test_s21_memcpy_comparison_large_strings
+    srand(time(NULL));
+    char test1[4096];
+    char test2[4096];
+    char test3[4096];
+
+    for (int i = 0; i < 4095; i++)
+        test1[i] = rand() % 128;
+    test1[4095] = '\0';
+
+    for (int i = 0; i < 4096; i++)
+        test2[i] = test1[i];
+    
+    for (int i = 0; i < 4095; i++)
+        test3[i] = rand() % 128;
+    test3[4095] = '\0';
+    
+    s21_memcpy(test1, test3, 4096);
+    memcpy(test2, test3, 4096);
+    
+    ck_assert_str_eq(test1, test2);
+
+
+
+
+#suite memset
+
+#test test_s21_memset_n_eq_0
+   char test1[128];
+   char test2[128];
+   char test3 = 'a';
+    for (int i = 0; i < 127; i++) 
+    {
+        test1[i] = i+1;
+    }
+    test1[127] = '\0';
+
+    for (int i = 0; i < 128; i++) 
+        test2[i] = test1[i];
+    
+
+    s21_memset(test1, test3, 0);
+    memset(test2, test3, 0);
+
+   ck_assert_str_eq(test1, test2);
+
+#test test_s21_memset_n_is_more_null_and_n_is_less_strlen_str
+    srand(time(NULL));
+    s21_size_t n = 1 + rand() % 128;
+    char test1[128];
+    char test2[128];
+    char test3 = ' ';
+
+    for (int i = 0; i < 127; i++) 
+    {
+        test1[i] = i+1;
+    }
+    test1[127] = '\0';
+
+    for (int i = 0; i < 128; i++) 
+        test2[i] = test1[i];
+
+    s21_memset(test1, test3, n);
+    memset(test2, test3, n);
+
+    ck_assert_str_eq(test1, test2);
+
+#test test_s21_memset_large_string_n_eq_strlen_str
+    srand(time(NULL));
+    char test1[4096];
+    char test2[4096];
+    char c = rand() % 128;
+
+    
+    for (int i = 0; i < 4095; i++)
+        test1[i] = rand() % 128;
+    test1[4095] = '\0';
+
+    for (int i = 0; i < 4096; i++)
+        test2[i] = test1[i];
+
+
+    s21_memset(test1, c, 4095);
+    memset(test2, c, 4095);
+
+    ck_assert_str_eq(test1, test2);
+
+
+
+
+#suite strncat
+
+#test test_s21_strncat_n_eq_0
+   char test1[129];
+   char test2[129];
+   char test3[128];
+   
+    for (int i = 0; i < 127; i++) 
+    {
+        test1[i] = i+1;
+    }
+    test1[127] = '\0';
+
+    for (int i = 0; i < 128; i++) 
+    {
+        test2[i] = test1[i];
+    }
+
+    for (int i = 0; i < 127; i++) 
+    {
+        test3[i] = i+1;
+    }
+    test3[127] = '\0';
+
+   ck_assert_str_eq(s21_strncat(test1, test3, 0), strncat(test2, test3, 0));
+
+#test test_s21_strncat_empty_string_to_not_empty_string
+   char test1[129];
+   char test2[129];
+   char test3[1] = "";
+   
+    for (int i = 0; i < 127; i++) 
+    {
+        test1[i] = i+1;
+    }
+    test1[127] = '\0';
+
+    for (int i = 0; i < 128; i++) 
+        test2[i] = test1[i];
+
+   ck_assert_str_eq(s21_strncat(test1, test3, 1), strncat(test2, test3, 1));
+
+#test test_s21_strncat_not_empty_string_to_empty_string
+   char test1[129];
+   test1[0] = '\0';
+   char test2[129];
+   test2[0] = '\0';
+   char test3[128];
+    for (int i = 0; i < 127; i++) 
+    {
+        test3[i] = i+1;
+    }
+    test3[127] = '\0';
+
+   ck_assert_str_eq(s21_strncat(test1, test3, 127), strncat(test2, test3, 127));
+
+#test test_s21_strncat_n_is_more_null_and_n_is_less_strlen_str
+    srand(time(NULL));
+    s21_size_t n = 1 + rand() % 128;
+    char test1[256];
+    char test2[256];
+    char test3[128];
+
+    for (int i = 0; i < 127; i++) 
+    {
+        test1[i] = i+1;
+    }
+    test1[127] = '\0';
+
+    for (int i = 0; i < 128; i++) 
+        test2[i] = test1[i];
+
+    for (int i = 0; i < 127; i++) 
+    {
+        test3[i] = i+1;
+    }
+    test3[127] = '\0';
+
+    ck_assert_str_eq(s21_strncat(test1, test3, n), strncat(test2, test3, n));
+
+
+
+#test test_s21_strncat_large_string_to_large_string
+    srand(time(NULL));
+    char test1[5000];
+    char test2[5000];
+    char test3[2048];
+    
+    for (int i = 0; i < 2047; i++)
+        test1[i] = rand() % 128;
+    test1[2047] = '\0';
+
+    for (int i = 0; i < 2048; i++)
+        test2[i] = test1[i];
+
+    for (int i = 0; i < 2048; i++)
+        test3[i] = rand() % 128;
+    
+     ck_assert_str_eq(s21_strncat(test1, test3, 2048), strncat(test2, test3, 2048));
+
+
+
+#suite strchr
+
+#test test_s21_strchr_empty_string
+    char test[10] = "";
+    char a = 'a';
+    ck_assert_pstr_eq(s21_strchr(test, a), strchr(test, a));
+
+#test test_s21_strchr_not_exist_symbol
+    char test[128];
+    for (int i = 0; i < 127; i++) 
+    {
+        test[i] = i+1;
+        if (test[i] == 'a')
+            test[i] = 'b';
+    }
+    test[127] = '\0';
+    ck_assert_pstr_eq(s21_strchr(test, 'a'), strchr(test, 'a'));
+
+#test test_s21_strchr_some_symbols
+    char test[100] = "qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrewqQWERTYUIOPAAASDFGHJKLZAXCVABNMMNBVCXZLAKJHGFDSA";
+    ck_assert_pstr_eq(s21_strchr(test, 'A'), strchr(test, 'A'));
+
+
+#test test_s21_strchr_symbol_in_large_string
+    srand(time(NULL));
+    char test[4096];
+    for (int i = 0; i <= 4094; i++)
+        test[i] = rand() % 128;
+    test[4095] = '\0';
+    ck_assert_pstr_eq(s21_strchr(test, 'A'), strchr(test, 'A'));
+
+
+
+#suite strncmp
+
+#test test_s21_strncmp_empty_strings
+    char test1[1] = "";
+    char test2[1] = "";
+    ck_assert_int_eq(s21_strncmp(test1, test2, 1), strncmp(test1, test2, 1));
+
+#test test_s21_strncmp_the_second_is_longer
+    char test1[128];
+    char test2[129];
+    for (int i = 0; i < 127; i++) 
+    {
+        test1[i] = i+1;
+    }
+    test1[127] = '\0';
+    
+    for (int i = 0; i < 127; i++) 
+    {
+        test2[i] = test1[i];
+    }
+    test2[127] = 'q';
+    test2[128] = '\0';
+
+    ck_assert_int_lt(s21_strncmp(test1, test2, 129),0);
+    ck_assert_int_lt(strncmp(test1, test2, 129),0);
+
+
+
+#test test_s21_strncmp_the_first_is_longer
+{
+    char test2[128];
+    char test1[129];
+    for (int i = 0; i < 127; i++) 
+    {
+        test2[i] = i+1;
+    }
+    test2[127] = '\0';
+    
+    for (int i = 0; i < 127; i++) 
+    {
+        test1[i] = test2[i];
+    }
+    test1[127] = 'Q';
+    test1[128] = '\0';
+
+    ck_assert_int_gt(s21_strncmp(test1, test2, 129),0);
+    ck_assert_int_gt(strncmp(test1, test2, 129),0);
+}
+
+#test test_s21_strncmp_empty_and_not_empty_strings
+    char test2[128];
+    char test1[1] = "";
+    for (int i = 0; i < 127; i++) 
+    {
+        test2[i] = i+1;
+    }
+    test2[127] = '\0';
+
+   ck_assert_int_eq(s21_strncmp(test1, test2, 128), strncmp(test1, test2, 128));
+
+#test test_s21_strncmp_same_strings
+    srand(time(NULL));
+    char test1[128];
+    char test2[128];
+    
+    for (int i = 0; i < 127; i++) 
+    {
+        test1[i] = i+1;
+    }
+    test1[127] = '\0';
+
+    for (int i = 0; i < 128; i++) 
+    {
+        test2[i] = test1[i];
+    }
+
+    ck_assert_int_eq(s21_strncmp(test1, test2, 128), strncmp(test1, test2, 128));
+
+#test test_s21_strncmp_same_strings_n_is_more_0_and_is_less_strlen_str
+    srand(time(NULL));
+    char test1[128];
+    char test2[128];
+    s21_size_t n = 1 + rand() % 128;
+    for (int i = 0; i < 127; i++) 
+    {
+        test1[i] = i+1;
+    }
+    test1[127] = '\0';
+    for (int i = 0; i < 128; i++) 
+    {
+        test2[i] = test1[i];
+    }
+    ck_assert_int_eq(s21_strncmp(test1, test2, n), strncmp(test1, test2, n));
+
+#test test_s21_strncmp_same_lenght_the_first_is_larger
+   
+    char test1[5] = "test";
+    char test2[5] = "tesa";
+
+    ck_assert_int_gt(s21_strncmp(test1, test2, 5),0);
+    ck_assert_int_gt(strncmp(test1, test2, 5),0);
+    
+
+
+#test ttest_s21_strncmp_same_lenght_the_second_is_larger
+{
+    char test1[5] = "Test";
+    char test2[5] = "test"; 
+
+    ck_assert_int_lt(s21_strncmp(test1, test2, 5),0);
+    ck_assert_int_lt(strncmp(test1, test2, 5),0);
+}
+
+#test test_s21_strncmp_comparison_large_strings
+    srand(time(NULL));
+    char test1[4096];
+    char test2[4096];
+    for (int i = 0; i < 4095; i++)
+        test1[i] = rand() % 128;
+    test1[4095] = '\0';
+
+    for (int i = 0; i < 4095; i++)
+        test2[i] = rand() % 128;
+    test2[4095] = '\0';
+
+    int result = s21_strncmp(test1, test2, 4096);
+
+    if(result > 0) {
+        ck_assert_int_gt(strncmp(test1, test2, 4096), 0);
+        ck_assert_int_gt(s21_strncmp(test1, test2, 4096), 0);
+    }
+    else if(result < 0){
+        ck_assert_int_lt(strncmp(test1, test2, 4096), 0);
+        ck_assert_int_lt(s21_strncmp(test1, test2, 4096), 0);
+    }
+    else
+        ck_assert_int_eq(result, strncmp(test1, test2, 4096));
+
+
+
+#suite strncpy
+
+#test test_s21_strncpy_src_is_empty_string
+    char test1[2] = "z";
+    char test2[2] = "z";
+    char test3[2] = "\0";
+
+   ck_assert_str_eq( s21_strncpy(test1, test3, 2), strncpy(test2, test3, 2));
+
+#test test_s21_strncpy_different_length
+    srand(time(NULL));
+    char test1[128];
+    char test2[128];
+    char test3[14] = "Hello, world!";
+    s21_size_t n = 1 + rand() % 14;
+
+    for (int i = 0; i < 127; i++) 
+    {
+        test1[i] = rand() % 128;
+    }
+    test1[127] = '\0';
+
+    for (int i = 0; i < 128; i++) 
+    {
+        test2[i] = test1[i];
+    }
+
+
+    ck_assert_str_eq(s21_strncpy(test1, test3, n), strncpy(test2, test3, n));
+
+#test test_s21_strncpy_n_eq_0
+    srand(time(NULL));
+    char test1[128];
+    char test2[128];
+    char test3[14] = "Hello, world!";
+
+    for (int i = 0; i < 127; i++) 
+    {
+        test1[i] = rand() % 128;
+    }
+    test1[127] = '\0';
+
+    for (int i = 0; i < 128; i++) 
+    {
+        test2[i] = test1[i];
+    }
+
+    ck_assert_str_eq(s21_strncpy(test1, test3, 0), strncpy(test2, test3, 0));
+
+#test test_s21_strncpy_additional_null
+    srand(time(NULL));
+    char test1[128];
+    char test3[20] = "Hello, world!";
+
+    for (int i = 13; i < 20; i++)
+        test3[i] = '\0';
+
+    for (int i = 0; i < 127; i++) 
+    {
+        test1[i] = rand() % 128;
+    }
+    test1[127] = '\0';
+
+    ck_assert_mem_eq(s21_strncpy(test1, test3, 15), strncpy(test1, test3, 15), 20);
+
+#test test_s21_strncpy_comparison_large_strings
+    srand(time(NULL));
+    char test1[4096];
+    char test2[4096];
+    char test3[4096];
+
+    for (int i = 0; i < 4095; i++)
+        test1[i] = rand() % 128;
+    test1[4095] = '\0';
+
+    for (int i = 0; i < 4096; i++)
+        test2[i] = test1[i];
+    
+    for (int i = 0; i < 4095; i++)
+        test3[i] = rand() % 128;
+    test3[4095] = '\0';
+    
+    ck_assert_str_eq(s21_strncpy(test1, test3, 4096), strncpy(test2, test3, 4096));
+
+
+
+#suite strcspn
+#test test_s21_strcspn_str2_empty_string
+    char test1[128];
+    char test2[1] = "";
+    for (int i = 0; i < 127; i++) 
+    {
+        test1[i] = i+1;
+    }
+    test1[127] = '\0';
+    ck_assert_uint_eq(s21_strcspn(test1, test2), strcspn(test1, test2));
+
+#test test_s21_strcspn_str1_empty_string
+    char test2[128];
+    char test1[1] = "";
+    for (int i = 0; i < 127; i++) 
+    {
+        test2[i] = i+1;
+    }
+    test2[127] = '\0';
+    ck_assert_uint_eq(s21_strcspn(test1, test2), strcspn(test1, test2));
+
+#test test_s21_strcspn_after_null
+    char test1[15] = "Hello, \0world!\0";
+    char test2[5] = "wrd!\0";
+    
+    ck_assert_uint_eq(s21_strcspn(test1, test2), strcspn(test1, test2));
+
+#test test_s21_strcspn_no_overlap
+    char test1[128];
+    char test2[2] = "a\0";
+    for (int i = 0; i < 127; i++) 
+    {
+        test1[i] = i+1;
+        if (test1[i] == 'a')
+            test1[i] = 'b';
+    }
+    test1[127] = '\0';
+    ck_assert_uint_eq(s21_strcspn(test1, test2), strcspn(test1, test2));
+
+#test test_s21_strcspn_overlap
+    char test1[128];
+    char test2[4] = "CBA\0";
+    for (int i = 0; i < 127; i++) 
+    {
+        test1[i] = i+1;
+    
+    }
+    test1[127] = '\0';
+    ck_assert_uint_eq(s21_strcspn(test1, test2), strcspn(test1, test2));
+
+#test test_s21_strcspn_in_large_string
+    srand(time(NULL));
+    char test2[2];
+    test2[0] = rand() % 128;
+    test2[1] = '\0';
+    char test1[4096];
+    for (int i = 0; i <= 4094; i++)
+        test1[i] = rand() % 128;
+    test1[4095] = '\0';
+    ck_assert_uint_eq(s21_strcspn(test1, test2), strcspn(test1, test2));
+
+
+
+#suite strpbrk
+#test test_s21_strpbrk_str2_empty_string
+    char test1[128];
+    char test2[1] = "";
+    for (int i = 0; i < 127; i++) 
+    {
+        test1[i] = i+1;
+    }
+    test1[127] = '\0';
+    ck_assert_ptr_eq(s21_strpbrk(test1, test2), strpbrk(test1, test2));
+
+#test test_s21_strpbrk_str1_empty_string
+    char test2[128];
+    char test1[1] = "";
+    for (int i = 0; i < 127; i++) 
+    {
+        test2[i] = i+1;
+    }
+    test2[127] = '\0';
+    ck_assert_ptr_eq(s21_strpbrk(test1, test2), strpbrk(test1, test2));
+
+#test test_s21_strpbrk_after_null
+    char test1[15] = "Hello, \0world!\0";
+    char test2[5] = "wrd!\0";
+    
+    ck_assert_ptr_eq(s21_strpbrk(test1, test2), strpbrk(test1, test2));
+
+#test test_s21_strpbrk_no_overlap
+    char test1[128];
+    char test2[2] = "a\0";
+    for (int i = 0; i < 127; i++) 
+    {
+        test1[i] = i+1;
+        if (test1[i] == 'a')
+            test1[i] = 'b';
+    }
+    test1[127] = '\0';
+    ck_assert_ptr_eq(s21_strpbrk(test1, test2), strpbrk(test1, test2));
+
+#test test_s21_strpbrk_overlap
+    char test1[128];
+    char test2[4] = "CBA\0";
+    for (int i = 0; i < 127; i++) 
+    {
+        test1[i] = i+1;
+    
+    }
+    test1[127] = '\0';
+    ck_assert_ptr_eq(s21_strpbrk(test1, test2), strpbrk(test1, test2));
+
+#test test_s21_strpbrk_in_large_string
+    srand(time(NULL));
+    char test2[2] = "a\0";
+    char test1[4096];
+    for (int i = 0; i < 4094; i++)
+        test1[i] = rand() % 128;
+    test1[4094] = 'a';
+    test1[4095] = '\0';
+    ck_assert_ptr_eq(s21_strpbrk(test1, test2), strpbrk(test1, test2));
+
+
+/* ----------------------------------------------------------------------------- */
+
+/* Название тестового файла */
+#suite strrchr
+
+/* Группа тестов для функции add */
+/* #group "Addition Tests" */
+
+/* Функции для инициализации и очистки */
+/* #setup setup_function */
+/* #teardown teardown_function */
+
+
+/* Тест: Поиск последнего вхождения символа в пустой строке */
+#test test_s21_strrchr_empty_string
+    char test[10] = "";
+    char a = 'a';
+    ck_assert_pstr_eq(s21_strrchr(test, a), strrchr(test, a));
+
+#test test_s21_strrchr_not_exist_symbol
+    char test[128];
+    for (int i = 0; i < 127; i++) 
+    {
+        test[i] = i+1;
+        if (test[i] == 'a')
+            test[i] = 'b';
+    }
+    test[127] = '\0';
+    ck_assert_pstr_eq(s21_strrchr(test, 'a'), strrchr(test, 'a'));
+
+#test test_s21_strrchr_some_symbols
+    char test[101] = "QWERTYUIOPAAASDFGHJKLZAXCVABNMMNBVCXZLAAAKJHGFDSqwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrewq";
+    ck_assert_pstr_eq(s21_strrchr(test, 'A'), strrchr(test, 'A'));
+
+
+#test test_s21_strrchr_symbol_in_large_string
+    srand(time(NULL));
+    char test[4096];
+    int c = rand() % 128;
+    for (int i = 0; i <= 4094; i++)
+        test[i] = rand() % 128;
+    test[4095] = '\0';
+    ck_assert_pstr_eq(s21_strrchr(test, c), strrchr(test, c));
+
+
+/* ----------------------------------------------------------------------------- */
+
+/* Название тестового файла */
+#suite strstr
+
+
+#test test_s21_strstr_needle_empty_string
+    char test1[128];
+    char test2[1] = "";
+    for (int i = 0; i < 127; i++) 
+    {
+        test1[i] = i+1;
+    }
+    test1[127] = '\0';
+    ck_assert_ptr_eq(s21_strstr(test1, test2), strstr(test1, test2));
+
+#test test_s21_strstr_haystack_empty_string
+    char test2[128];
+    char test1[1] = "";
+    for (int i = 0; i < 127; i++) 
+    {
+        test2[i] = i+1;
+    }
+    test2[127] = '\0';
+    ck_assert_ptr_eq(s21_strstr(test1, test2), strstr(test1, test2));
+
+#test test_s21_strstr_after_null
+    char test1[15] = "Hello, \0world!\0";
+    char test2[5] = "ld\0";
+    
+    ck_assert_ptr_eq(s21_strstr(test1, test2), strstr(test1, test2));
+
+#test test_s21_strstr_no_overlap
+    char test1[128];
+    char test2[4] = "cba\0";
+    for (int i = 0; i < 127; i++) 
+    {
+        test1[i] = i+1;
+    
+    }
+    test1[127] = '\0';
+    ck_assert_ptr_eq(s21_strstr(test1, test2), strstr(test1, test2));
+
+#test test_s21_strstr_overlap
+    char test1[128];
+    char test2[4] = "ABC\0";
+    for (int i = 0; i < 127; i++) 
+    {
+        test1[i] = i+1;
+    
+    }
+    test1[127] = '\0';
+    ck_assert_ptr_eq(s21_strstr(test1, test2), strstr(test1, test2));
+
+#test test_s21_strstr_in_large_string
+    srand(time(NULL));
+    char test2[4] = "abc\0";
+    char test1[4096];
+    for (int i = 0; i < 4092; i++)
+        test1[i] = rand() % 128;
+    test1[4092] = 'a';
+    test1[4093] = 'b';
+    test1[4094] = 'c';
+    test1[4095] = '\0';
+    ck_assert_ptr_eq(s21_strstr(test1, test2), strstr(test1, test2));
+
+
+/* ----------------------------------------------------------------------------- */
+
+/* Название тестового файла */
+#suite strtok
+
+/* Группа тестов для функции add */
+/* #group "Addition Tests" */
+
+/* Функции для инициализации и очистки */
+/* #setup setup_function */
+/* #teardown teardown_function */
+
+/* Тест: Проверка функции при использовании одного разделителя */
+#test test_s21_strtok_one_delim
+    char test1[128] = "apple,banana,cherry";
+    char test2[128];
+    for (int z = 0; z < 128; z++)
+        test2[z] = test1[z];
+
+    char test3[2] = ",";
+    
+    int i = 1;
+    int j = 1;
+    char *token1[128];
+    char *token2[128];
+
+    char *temp1 = s21_strtok(test1, test3);
+    token1[0] = temp1;
+
+    while (temp1 != NULL)
+    {
+        temp1 = s21_strtok(NULL, test3);
+        token1[i] = temp1;
+        i++;
+    }
+    
+    char *temp2 = strtok(test2, test3);
+    token2[0] = temp2;
+
+    while (temp2 != NULL)
+    {
+        temp2 = strtok(NULL, test3);
+        token2[j] = temp2;
+        j++;
+    }
+
+    ck_assert_int_eq(i, j);
+
+    for (int y = 0; y < i; y++)
+    {
+        ck_assert_pstr_eq(token1[y], token2[y]);
+        
+    }
+    
+
+
+#test test_s21_strtok_some_delims
+    char test1[25] = "apple,banana:cherry.kiwi";
+    char test2[25];
+    for (int z = 0; z < 25; z++)
+        test2[z] = test1[z];
+    char test3[4] = ",:.";
+    
+    int i = 1;
+    int j = 1;
+    char *token1[128];
+    char *token2[128];
+
+    char *temp1 = s21_strtok(test1, test3);
+    token1[0] = temp1;
+
+    while (temp1 != NULL)
+    {
+        temp1 = s21_strtok(NULL, test3);
+        token1[i] = temp1;
+        i++;
+    }
+    
+    char *temp2 = strtok(test2, test3);
+    token2[0] = temp2;
+
+    while (temp2 != NULL)
+    {
+        temp2 = strtok(NULL, test3);
+        token2[j] = temp2;
+        j++;
+    }
+
+    ck_assert_int_eq(i, j);
+
+    for (int y = 0; y < i; y++)
+    {
+        ck_assert_pstr_eq(token1[y], token2[y]);
+        
+    }
+
+#test test_s21_strtok_one_delim_in_beginning_and_in_ending
+    char test1[23] = ",apple,,banana,cherry,";
+    char test2[23];
+    for (int z = 0; z < 23; z++)
+        test2[z] = test1[z];
+    char test3[2] = ",";
+    
+    int i = 1;
+    int j = 1;
+    char *token1[128];
+    char *token2[128];
+
+    char *temp1 = s21_strtok(test1, test3);
+    token1[0] = temp1;
+
+    while (temp1 != NULL)
+    {
+        temp1 = s21_strtok(NULL, test3);
+        token1[i] = temp1;
+        i++;
+    }
+    
+    char *temp2 = strtok(test2, test3);
+    token2[0] = temp2;
+
+    while (temp2 != NULL)
+    {
+        temp2 = strtok(NULL, test3);
+        token2[j] = temp2;
+        j++;
+    }
+
+    ck_assert_int_eq(i, j);
+
+    for (int y = 0; y < i; y++)
+    {
+        ck_assert_pstr_eq(token1[y], token2[y]);
+        
+    }
+
+#test test_s21_strtok_delim_is_empty
+    char test1[128];
+    char test2[128];
+    char test3[1] = "\0";
+    for (int p = 0; p < 127; p++) 
+    {
+        test1[p] = p+1;
+
+    }
+    test1[127] = '\0';
+
+    for (int p = 0; p < 128; p++) 
+        test2[p] = test1[p];
+
+    int i = 1;
+    int j = 1;
+    char *token1[128];
+    char *token2[128];
+
+    char *temp1 = s21_strtok(test1, test3);
+    token1[0] = temp1;
+
+    while (temp1 != NULL)
+    {
+        temp1 = s21_strtok(NULL, test3);
+        token1[i] = temp1;
+        i++;
+    }
+    
+    char *temp2 = strtok(test2, test3);
+    token2[0] = temp2;
+
+    while (temp2 != NULL)
+    {
+        temp2 = strtok(NULL, test3);
+        token2[j] = temp2;
+        j++;
+    }
+
+    ck_assert_int_eq(i, j);
+
+    for (int y = 0; y < i; y++)
+    {
+        ck_assert_pstr_eq(token1[y], token2[y]);
+        
+    }
+
+
+#test test_s21_strtok_str_is_empty
+    char test1[1] = "\0";
+    char test2[1] = "\0";
+    char test3[2] = ",\0";
+    
+    int i = 1;
+    int j = 1;
+    char *token1[128];
+    char *token2[128];
+
+    char *temp1 = s21_strtok(test1, test3);
+    token1[0] = temp1;
+
+    while (temp1 != NULL)
+    {
+        temp1 = s21_strtok(NULL, test3);
+        token1[i] = temp1;
+        i++;
+    }
+    
+    char *temp2 = strtok(test2, test3);
+    token2[0] = temp2;
+
+    while (temp2 != NULL)
+    {
+        temp2 = strtok(NULL, test3);
+        token2[j] = temp2;
+        j++;
+    }
+
+    ck_assert_int_eq(i, j);
+
+    for (int y = 0; y < i; y++)
+    {
+        ck_assert_pstr_eq(token1[y], token2[y]);
+        
+    }
+
+
+#test test_s21_strtok_in_large_string
+    srand(time(NULL));
+    char test3[2];
+    test3[0] = rand() % 128;
+    test3[1] = '\0';
+    char test1[4096];
+    char test2[4096];
+    for (int z = 0; z < 4095; z++)
+        test1[z] = rand() % 128;
+    test1[4095] = '\0';
+
+    for (int z = 0; z < 4096; z++)
+        test2[z] = test1[z];
+
+    int i = 1;
+    int j = 1;
+    char *token1[128];
+    char *token2[128];
+
+    char *temp1 = s21_strtok(test1, test3);
+    token1[0] = temp1;
+
+    while (temp1 != NULL)
+    {
+        temp1 = s21_strtok(NULL, test3);
+        token1[i] = temp1;
+        i++;
+    }
+    
+    char *temp2 = strtok(test2, test3);
+    token2[0] = temp2;
+
+    while (temp2 != NULL)
+    {
+        temp2 = strtok(NULL, test3);
+        token2[j] = temp2;
+        j++;
+    }
+
+    ck_assert_int_eq(i, j);
+
+    for (int y = 0; y < i; y++)
+    {
+        ck_assert_pstr_eq(token1[y], token2[y]);
+        
+    }
+
+
+
+/* ----------------------------------------------------------------------------- */
+
+/* Название тестового файла */
+#suite to_upper
+
+/* Группа тестов для функции add */
+/* #group "Addition Tests" */
+
+/* Функции для инициализации и очистки */
+/* #setup setup_function */
+/* #teardown teardown_function */
+
+/* Тест: Проверка обычной строки*/
+#test test_s21_to_upper_standart
+    
+    char test1[128];
+    char test2[128];
+    for (int i = 0; i < 127; i++) 
+    {
+        test1[i] = i+1;
+    }
+    test1[127] = '\0';
+    for (int i = 0; i < 127; i++) 
+    {
+        test2[i] = i+1;
+        if (test2[i] >='a' && test2[i] <='z')
+            test2[i] = test2[i] - 32;
+    }
+    test2[127] = '\0';
+    char *str = s21_to_upper(test1);
+    ck_assert_str_eq(str, test2);
+
+    if (str != s21_NULL)
+        free(str);
+
+#test test_s21_to_upper_NULL
+    
+    char *test1 = s21_NULL;
+    char *str = s21_to_upper(test1);
+    ck_assert_ptr_null(str);
+
+    if (str != s21_NULL)
+        free(str);
+
+#test test_s21_to_upper_large_string
+    
+    srand(time(NULL));
+    char test1[4096];
+    char test2[4096];
+    char *str;
+
+    for (int i = 0; i < 4095; i++)
+        test1[i] = rand() % 128;
+    test1[4095] = '\0';
+
+    for (int i = 0; i < 4096; i++)
+    {
+        test2[i] = test1[i];
+        if(test2[i] >=97 && test2[i] <=122)
+            test2[i] = test2[i] - 32;
+    }
+
+    str = s21_to_upper(test1);
+    ck_assert_str_eq(str, test2);
+
+    if (str != s21_NULL)
+        free(str);
+
+#test test_s21_to_upper_empty_string
+    
+    char test1[1] = "\0";
+
+    char *str = s21_to_upper(test1);
+    ck_assert_str_eq(str, test1);
+
+    if (str != s21_NULL)
+        free(str);
+
+
+#test test_s21_to_upper_no_change
+    
+    char test1[70]; // = " !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`{|}~";
+    for (int i = 0; i < 65; i++) 
+    {
+        test1[i] = i+32;
+    }
+    for (int i = 65; i < 69; i++) 
+    {
+        test1[i] = i+58;
+    }
+    test1[69] = '\0';
+    
+    char *str = s21_to_upper(test1);
+    ck_assert_str_eq(str, test1);
+
+    if (str != s21_NULL)
+        free(str);
+
+#test test_s21_to_upper_all_letters
+    
+    char test1[53] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz\0";
+    char test2[53] = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ\0";
+    
+    char *str = s21_to_upper(test1);
+    ck_assert_str_eq(str, test2);
+
+    if (str != s21_NULL)
+        free(str);
+
+#test test_s21_to_upper_all_small_letters
+    
+    char test1[53] = "abcdefghijklmnopqrstuvwxyz\0";
+    char test2[53] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ\0";
+    
+    char *str = s21_to_upper(test1);
+    ck_assert_str_eq(str, test2);
+
+    if (str != s21_NULL)
+        free(str);
+
+
+
+/* ----------------------------------------------------------------------------- */
+
+/* Название тестового файла */
+#suite to_lower
+
+/* Группа тестов для функции add */
+/* #group "Addition Tests" */
+
+/* Функции для инициализации и очистки */
+/* #setup setup_function */
+/* #teardown teardown_function */
+
+/* Тест: Проверка обычной строки*/
+#test test_s21_to_lower_standart
+    
+    char test1[128];
+    char test2[128];
+    for (int i = 0; i < 127; i++) 
+    {
+        test1[i] = i+1;
+    }
+    test1[127] = '\0';
+    for (int i = 0; i < 127; i++) 
+    {
+        test2[i] = i+1;
+        if (test2[i] >='A' && test2[i] <='Z')
+            test2[i] = test2[i] + 32;
+    }
+    test2[127] = '\0';
+    char *str = s21_to_lower(test1);
+    ck_assert_str_eq(str, test2);
+
+    if (str != s21_NULL)
+        free(str);
+
+#test test_s21_to_lower_NULL
+    
+    char *test1 = s21_NULL;
+    char *str = s21_to_lower(test1);
+    ck_assert_ptr_null(str);
+
+    if (str != s21_NULL)
+        free(str);
+
+#test test_s21_to_lower_large_string
+    
+    srand(time(NULL));
+    char test1[4096];
+    char test2[4096];
+    char *str;
+
+    for (int i = 0; i < 4095; i++)
+        test1[i] = rand() % 128;
+    test1[4095] = '\0';
+
+    for (int i = 0; i < 4096; i++)
+    {
+        test2[i] = test1[i];
+        if(test2[i] >=65 && test2[i] <=90)
+            test2[i] = test2[i] + 32;
+    }
+
+    str = s21_to_lower(test1);
+    ck_assert_str_eq(str, test2);
+
+    if (str != s21_NULL)
+        free(str);
+
+#test test_s21_to_lower_empty_string
+    
+    char test1[1] = "\0";
+
+    char *str = s21_to_lower(test1);
+    ck_assert_str_eq(str, test1);
+
+    if (str != s21_NULL)
+        free(str);
+
+
+#test test_s21_to_lower_no_change
+    
+    char test1[70]; // = " !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`{|}~";
+    for (int i = 0; i < 33; i++) 
+    {
+        test1[i] = i+32;
+    }
+    for (int i = 33; i < 69; i++) 
+    {
+        test1[i] = i+58;
+    }
+    test1[69] = '\0';
+    
+    char *str = s21_to_lower(test1);
+    ck_assert_str_eq(str, test1);
+
+    if (str != s21_NULL)
+        free(str);
+
+#test test_s21_to_lower_all_letters
+    
+    char test1[53] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz\0";
+    char test2[53] = "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz\0";
+    
+    char *str = s21_to_lower(test1);
+    ck_assert_str_eq(str, test2);
+
+    if (str != s21_NULL)
+        free(str);
+
+#test test_s21_to_lower_all_small_letters
+    
+    char test1[53] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ\0";
+    char test2[53] = "abcdefghijklmnopqrstuvwxyz\0";
+    
+    char *str = s21_to_lower(test1);
+    ck_assert_str_eq(str, test2);
+
+    if (str != s21_NULL)
+        free(str);
+
+
+/* ----------------------------------------------------------------------------- */
+#suite insert
+/* Группа тестов для функции add */
+/* #group "Addition Tests" */
+
+/* Функции для инициализации и очистки */
+/* #setup setup_function */
+/* #teardown teardown_function */
+
+
+/* Тест: Проверка передача индексa в середине большой строки */
+
+#test test_s21_insert_large_string
+    
+    //srand(time(NULL));
+    char test1[1000] = "aeGNqJmfdethnTxVvnbmepvNcmympUaEiyrctWFPWtxJNGbXtcZFoEyGSQuAIWlbyENWEzoUxWIfnqKlAypTGlLvmxmtEFNYwgvEkTAcRFCKPzwlpkSEMKmPfXhtfmfKYdXmbTJfAUrvzhXUDHGyKfqzhidmoRLbuHVRXfAhLTFZRKfoIjGbTZrJGlUyQOdgiKBHklbgNjReIXUuFdrgtfVoiPvkTvPSrsCzXjsdmruFgVmzEeOrFsdnGGJVetEVgaawojSXYJWtbPdIUoYpVGWYVOoRZUbZTfMMrXIHWeBkfMAXQvgFxITOvMaivSBuRdqvZsKWhKoJRPjGSRKMlBiSfIzJKHxGolonpdjlgQrXrbXFjgnWgJDPbUSYfFLwruJfylonoBThJjsPFzZaslsisOsZZRjnWgeasYLztxGXdhSlNlePtScaUYVDfEwNJjgwGaZnsYNUAmReGqcIhsMKsItDcUTkhpLFoMLyDqFMRfyYjQfDkjXALsnMhfwLFcZWRvROecYKkvsOTtMvgFfJcXtwphExBcRsSmlXRcasnsSbeinGmxiaxNFQuBBPDDWievMaCBNpLaIYEwpoYpwSpEwjkgSXNojiXKmeKpXgXjiSOMCXGsKDdoWfheQHaZkpnkgeksappsZQVMoCCsmxjRBbnYjjAxsXXUXXWssHornAyApXAxootxRpTnRbZjkYOqNAiRxkpeKpSCrEPYCzQhcxtHtpwUSEPnMLNkMFMuKjFsmsfXhOJtrSvHWpakWBVjWasVxjxadicSLmEvNwyYQghJKiEwIpcPwUlnjHlgrdXBRAlcDmSURsTKupIbVvDUVQdcSZeICLZDNelXzKAJwJxmBiPNJJTGvfuIGKuWivKEhgngfucoVtzObXsnVejtLejXHiElufVNrWzyPqAfhNdxSovWZKAJKtnspEvseSyFlkShTBnhTvhyiRbBbHffZRoacLWVUbuLoCycBBAVTmSaZPTdMxArL";
+    char test2[1000] = "hwBnGXQTBzHgnlskqvzRSGdMHCRdaJQYHPQHaovORXrMuZKMtwcwGipxlafZjEVaPQZqCjdvovrUoXRpdqVotaKFydBVEeuEPjjvXCehDyaIvDYiusoWMIuXggUdYsyRZJEhmKICQBcqesEHIWqbeBMMGpPnFMsAriInWtfOpNyfnFlRUJqGLjzniQoNEOzaeXNdRtdBJlgeUTCyYbeDhUntNQRIgGPpvMARodhTXVUwsMyuyzMNjLelwkEVlGQtCXdhjsMgcKqTtJhmYGrhitvaXCpvYksKhmuwZqtoTlMlhbJBACQZXWtdsKjKILQILwGIKsypQBrndnwNxASDhoFUDHmupgBnRZcJugvPVbKoTbjDanEeSYVwfJeKooCHwgOcEYByjWqihppdsZsRFlLXXWoWGrWrSMqQplQeeCOwWruKyTmEwyLrlwMfUoIxRcTACRXnrzhqGBibApSbTsNPbJRtTOHlVZVGqOdoabBCXRVxvOMYMpTHnZreiLjVORDKfvyefpOGfvOwnAYdMNtqEmSaqXfyiHkfpBUMIEHdtzrfMwLSenYsbcuJCjSvcwWPyuYcUbOWzaxpqooMvbPMzpkFKgFaLGjQHwYvRAvTrWXoGJTnXGYkrEqZgoSNcqvMXcKeVahWQcXZGhKBnKSHnvEvfDwtYXUtsguMYTgPfYRSMIKYqGTvKNniluwVsfXVLwBCoDqGqpEetQVGbQsaPjZRtVfCVdvjNdkKoHBLcOHosApdWSscPuPJdHLWqoNJuOHmhayDTyREvGtAufVTiHmLaEhFMrZJCLOixPiaHPQSsORpWwEMEXmxxYhHIZrmONoJNwHBEMlVJqnWmIGkKkrXeLSNzngxVtXdhyPzFYcpvweJRmoyvLVQVkMiQhPhxyrgmSBjxUjXZApIHmgBuvlRVruXRRKqKUMZdejXmqlgpJtayxzRyjomBxfxHRhlWqvktigyTjdnCsKzsHVlcotRHlxIZEFyKyw";
+    char test3[1999] = "aeGNqJmfdethnTxVvnbmepvNcmympUaEiyrctWFPWtxJNGbXtcZFoEyGSQuAIWlbyENWEzoUxWIfnqKlAypTGlLvmxmtEFNYwgvEkTAcRFCKPzwlpkSEMKmPfXhtfmfKYdXmbTJfAUrvzhXUDHGyKfqzhidmoRLbuHVRXfAhLTFZRKfoIjGbTZrJGlUyQOdgiKBHklbgNjReIXUuFdrgtfVoiPvkTvPSrsCzXjsdmruFgVmzEeOrFsdnGGJVetEVgaawojSXYJWtbPdIUoYpVGWYVOoRZUbZTfMMrXIHWeBkfMAXQvgFxITOvMaivSBuRdqvZsKWhKoJRPjGSRKMlBiSfIzJKHxGolonpdjlgQrXrbXFjgnWgJDPbUSYfFLwruJfylonoBThJjsPFzZaslsisOsZZRjnWgeasYLztxGXdhSlNlePtScaUYVDfEwNJjgwGaZnsYNUAmReGqcIhsMKsItDcUTkhpLFoMLyDqFMRfyYjQfhwBnGXQTBzHgnlskqvzRSGdMHCRdaJQYHPQHaovORXrMuZKMtwcwGipxlafZjEVaPQZqCjdvovrUoXRpdqVotaKFydBVEeuEPjjvXCehDyaIvDYiusoWMIuXggUdYsyRZJEhmKICQBcqesEHIWqbeBMMGpPnFMsAriInWtfOpNyfnFlRUJqGLjzniQoNEOzaeXNdRtdBJlgeUTCyYbeDhUntNQRIgGPpvMARodhTXVUwsMyuyzMNjLelwkEVlGQtCXdhjsMgcKqTtJhmYGrhitvaXCpvYksKhmuwZqtoTlMlhbJBACQZXWtdsKjKILQILwGIKsypQBrndnwNxASDhoFUDHmupgBnRZcJugvPVbKoTbjDanEeSYVwfJeKooCHwgOcEYByjWqihppdsZsRFlLXXWoWGrWrSMqQplQeeCOwWruKyTmEwyLrlwMfUoIxRcTACRXnrzhqGBibApSbTsNPbJRtTOHlVZVGqOdoabBCXRVxvOMYMpTHnZreiLjVORDKfvyefpOGfvOwnAYdMNtqEmSaqXfyiHkfpBUMIEHdtzrfMwLSenYsbcuJCjSvcwWPyuYcUbOWzaxpqooMvbPMzpkFKgFaLGjQHwYvRAvTrWXoGJTnXGYkrEqZgoSNcqvMXcKeVahWQcXZGhKBnKSHnvEvfDwtYXUtsguMYTgPfYRSMIKYqGTvKNniluwVsfXVLwBCoDqGqpEetQVGbQsaPjZRtVfCVdvjNdkKoHBLcOHosApdWSscPuPJdHLWqoNJuOHmhayDTyREvGtAufVTiHmLaEhFMrZJCLOixPiaHPQSsORpWwEMEXmxxYhHIZrmONoJNwHBEMlVJqnWmIGkKkrXeLSNzngxVtXdhyPzFYcpvweJRmoyvLVQVkMiQhPhxyrgmSBjxUjXZApIHmgBuvlRVruXRRKqKUMZdejXmqlgpJtayxzRyjomBxfxHRhlWqvktigyTjdnCsKzsHVlcotRHlxIZEFyKywDkjXALsnMhfwLFcZWRvROecYKkvsOTtMvgFfJcXtwphExBcRsSmlXRcasnsSbeinGmxiaxNFQuBBPDDWievMaCBNpLaIYEwpoYpwSpEwjkgSXNojiXKmeKpXgXjiSOMCXGsKDdoWfheQHaZkpnkgeksappsZQVMoCCsmxjRBbnYjjAxsXXUXXWssHornAyApXAxootxRpTnRbZjkYOqNAiRxkpeKpSCrEPYCzQhcxtHtpwUSEPnMLNkMFMuKjFsmsfXhOJtrSvHWpakWBVjWasVxjxadicSLmEvNwyYQghJKiEwIpcPwUlnjHlgrdXBRAlcDmSURsTKupIbVvDUVQdcSZeICLZDNelXzKAJwJxmBiPNJJTGvfuIGKuWivKEhgngfucoVtzObXsnVejtLejXHiElufVNrWzyPqAfhNdxSovWZKAJKtnspEvseSyFlkShTBnhTvhyiRbBbHffZRoacLWVUbuLoCycBBAVTmSaZPTdMxArL";
+
+    char *str = s21_insert(test1, test2, 499);
+    ck_assert_str_eq(str, test3);
+
+    if (str!= s21_NULL)
+        free(str);
+
+
+#test test_s21_insert_src_is_NULL
+    
+    char *src = s21_NULL;
+    char *str1;
+    char str[128];
+    for (int i = 0; i < 127; i++) 
+    {
+        str[i] = i+1;
+    }
+    str[127] = '\0';
+    
+    str1 = s21_insert(src, str, 18);
+    ck_assert_ptr_null(str1);
+
+    if (str1 != s21_NULL)
+        free(str1);
+
+#test test_s21_insert_str_is_NULL
+    
+    char *str = s21_NULL;
+    char *str1;
+    char src[128];
+    for (int i = 0; i < 127; i++) 
+    {
+        src[i] = i+1;
+    }
+    src[127] = '\0';
+    
+    str1 = s21_insert(src, str, 36);
+    ck_assert_ptr_null(str1);
+
+    if (str1 != s21_NULL)
+        free(str1);
+
+#test test_s21_insert_n_is_greater_than_strlen_src
+    
+    char src[128];
+    char *str1;
+    char str[128];
+    for (int i = 0; i < 127; i++) 
+    {
+        str[i] = i+1;
+    }
+    str[127] = '\0';
+
+    for (int i = 0; i < 127; i++) 
+    {
+        src[i] = i+1;
+    }
+    src[127] = '\0';
+    
+    str1 = s21_insert(src, str, 128);
+    ck_assert_ptr_null(str1);
+
+    if (str1 != s21_NULL)
+        free(str1);
+
+#test test_s21_insert_n_is_negative
+    
+    char src[128];
+    char *str1;
+    char str[128];
+    for (int i = 0; i < 127; i++) 
+    {
+        str[i] = i+1;
+    }
+    str[127] = '\0';
+
+    for (int i = 0; i < 127; i++) 
+    {
+        src[i] = i+1;
+    }
+    src[127] = '\0';
+    
+    str1 = s21_insert(src, str, -1);
+    ck_assert_ptr_null(str1);
+
+    if (str1 != s21_NULL)
+        free(str1);
+
+#test test_s21_insert_str_is_empty
+    
+    char src[128];
+    char str[1] = "\0";
+    char *str1;
+
+    for (int i = 0; i < 127; i++) 
+    {
+        src[i] = i+1;
+    }
+    src[127] = '\0';
+    
+    str1 = s21_insert(src, str, 69);
+    ck_assert_str_eq(str1, src);
+
+    if (str1 != s21_NULL)
+        free(str1);
+
+
+
+#test test_s21_insert_src_is_empty
+    
+    char str[128];
+    char src[1] = "\0";
+    char *str1;
+
+    for (int i = 0; i < 127; i++) 
+    {
+        str[i] = i+1;
+    }
+    str[127] = '\0';
+    
+    str1 = s21_insert(src, str, 0);
+    ck_assert_str_eq(str1, str);
+
+    if (str1 != s21_NULL)
+        free(str1);
+
+#test test_s21_insert_src_and_str_are_empty
+    
+    char src[1] = "\0";
+    char str[1] = "\0";
+    char *str1;
+    
+    str1 = s21_insert(src, str, 0);
+    ck_assert_str_eq(str1, src);
+
+    if (str1 != s21_NULL)
+        free(str1);
+
+#test test_s21_insert_n_eq_0
+    
+    char str[128] = "2mkt8vX8IbDcDBxBEh0D9p1vdfncN7mtFHc0dpWySEBvQ81sUrb85e4MI4aeBsERAUoeCBZi2do7QIKhYq8YeTtz0B3YZR3K0zBcycTABVfBvhg6W3XkxkOhHjpmtXy";
+    char src[128] = "TVTf1dMKgj8uBuOPyjtGAtWZsynPXFVuptMQl6KVM7lzhV9bfXWVnaR7dClsgScZrJCEH5OiCC6oZ7by5jjwuESya8vdw4tGQa3UA5wvqAalUqa8YrdwLoZO7AfRNGc";
+    char str2[255] = "2mkt8vX8IbDcDBxBEh0D9p1vdfncN7mtFHc0dpWySEBvQ81sUrb85e4MI4aeBsERAUoeCBZi2do7QIKhYq8YeTtz0B3YZR3K0zBcycTABVfBvhg6W3XkxkOhHjpmtXyTVTf1dMKgj8uBuOPyjtGAtWZsynPXFVuptMQl6KVM7lzhV9bfXWVnaR7dClsgScZrJCEH5OiCC6oZ7by5jjwuESya8vdw4tGQa3UA5wvqAalUqa8YrdwLoZO7AfRNGc";
+    char *str1;
+    
+    str1 = s21_insert(src, str, 0);
+    ck_assert_str_eq(str1, str2);
+
+    if (str1 != s21_NULL)
+        free(str1);
+
+#test test_s21_insert_n_eq_strlen_src
+    
+    char str[128] = "pIVYG4mxgIfx1Ij5NkvoqtQUSimuIKDVj5W3KqsDADypJQfXTKMWo6ifjLOWXyeqJhcVTj1nAYPVqc0Elhv0UeHeVHgBUtCWJAu361sS9QaqRuh4ZQHPmHZxym202eS";
+    char src[128] = "ytLaSNmwixK3GDlshTVWnDwpcKe7y3r5bYJ35nmbgTXoTJvFQ9dCnT4ouo7hlZtUT8PqA5KcT6GaW3pW9RLyM2guzBTBbrXr0vVjmNEKuNroXGKKARZPqOhSA9Rb4lZ";
+    char str2[255] = "ytLaSNmwixK3GDlshTVWnDwpcKe7y3r5bYJ35nmbgTXoTJvFQ9dCnT4ouo7hlZtUT8PqA5KcT6GaW3pW9RLyM2guzBTBbrXr0vVjmNEKuNroXGKKARZPqOhSA9Rb4lZpIVYG4mxgIfx1Ij5NkvoqtQUSimuIKDVj5W3KqsDADypJQfXTKMWo6ifjLOWXyeqJhcVTj1nAYPVqc0Elhv0UeHeVHgBUtCWJAu361sS9QaqRuh4ZQHPmHZxym202eS";
+    char *str1;
+    
+    str1 = s21_insert(src, str, 127);
+    ck_assert_str_eq(str1, str2);
+
+    if (str1 != s21_NULL)
+        free(str1);
+
+#suite sprintf
+
+#test _0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "";
+ck_assert_int_eq(s21_sprintf(str1, format), sprintf(str2, format));
+ck_assert_str_eq(str1, str2);
+
+#test _1
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "d";
+ck_assert_int_eq(s21_sprintf(str1, format), sprintf(str2, format));
+ck_assert_str_eq(str1, str2);
+
+#test _2
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "\n";
+ck_assert_int_eq(s21_sprintf(str1, format), sprintf(str2, format));
+ck_assert_str_eq(str1, str2);
+
+#test _3
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "werg\n\t\\";
+ck_assert_int_eq(s21_sprintf(str1, format), sprintf(str2, format));
+ck_assert_str_eq(str1, str2);
+
+#test percent_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%%";
+ck_assert_int_eq(s21_sprintf(str1, format), sprintf(str2, format));
+ck_assert_str_eq(str1, str2);
+
+#test percent_1
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "d%%";
+ck_assert_int_eq(s21_sprintf(str1, format), sprintf(str2, format));
+ck_assert_str_eq(str1, str2);
+
+#test percent_2
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "d%%g";
+ck_assert_int_eq(s21_sprintf(str1, format), sprintf(str2, format));
+ck_assert_str_eq(str1, str2);
+
+#test percent_3
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "d%%r";
+ck_assert_int_eq(s21_sprintf(str1, format), sprintf(str2, format));
+ck_assert_str_eq(str1, str2);
+
+#test percent_4
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "d%%r %% m";
+ck_assert_int_eq(s21_sprintf(str1, format), sprintf(str2, format));
+ck_assert_str_eq(str1, str2);
+
+#test c_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%c";
+ck_assert_int_eq(s21_sprintf(str1, format, 'u'), sprintf(str2, format, 'u'));
+ck_assert_str_eq(str1, str2);
+
+#test c_1
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%c";
+ck_assert_int_eq(s21_sprintf(str1, format, 'u'), sprintf(str2, format, 'u'));
+ck_assert_str_eq(str1, str2);
+
+#test c_2
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%c";
+ck_assert_int_eq(s21_sprintf(str1, format, 'u'), sprintf(str2, format, 'u'));
+ck_assert_str_eq(str1, str2);
+
+#test c_3
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "hgd%cfg;%c%c sdfh";
+ck_assert_int_eq(s21_sprintf(str1, format, 'u', 'd', 'g'), sprintf(str2, format, 'u', 'd', 'g'));
+ck_assert_str_eq(str1, str2);
+
+#test percent_c_1
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "d%%r %%%c m";
+ck_assert_int_eq(s21_sprintf(str1, format, 'y'), sprintf(str2, format, 'y'));
+ck_assert_str_eq(str1, str2);
+
+#test s_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%s";
+ck_assert_int_eq(s21_sprintf(str1, format, "sdfgs"), sprintf(str2, format, "sdfgs"));
+ck_assert_str_eq(str1, str2);
+
+#test s_1
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "dgfh%s";
+ck_assert_int_eq(s21_sprintf(str1, format, "sdfgs"), sprintf(str2, format, "sdfgs"));
+ck_assert_str_eq(str1, str2);
+
+#test s_3
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%sdfsg";
+ck_assert_int_eq(s21_sprintf(str1, format, "sdfgs"), sprintf(str2, format, "sdfgs"));
+ck_assert_str_eq(str1, str2);
+
+#test s_4
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "reth%s\\\t%s%s";
+ck_assert_int_eq(s21_sprintf(str1, format, "sdfgs", "dsfg", "9l"), sprintf(str2, format, "sdfgs", "dsfg", "9l"));
+ck_assert_str_eq(str1, str2);
+
+#test s_c
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "reth%s\\\t%c%s";
+ck_assert_int_eq(s21_sprintf(str1, format, "sdfgs", "d", "9l"), sprintf(str2, format, "sdfgs", "d", "9l"));
+ck_assert_str_eq(str1, str2);
+
+#test d_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+int d = 10;
+char *format = "%d";
+ck_assert_int_eq(s21_sprintf(str1, format, d), sprintf(str2, format, d));
+ck_assert_str_eq(str1, str2);
+
+#test d_1
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%dsdfg";
+ck_assert_int_eq(s21_sprintf(str1, format, 987654321), sprintf(str2, format, 987654321));
+ck_assert_str_eq(str1, str2);
+
+#test d_2
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "dfg%dmety";
+ck_assert_int_eq(s21_sprintf(str1, format, -666), sprintf(str2, format, -666));
+ck_assert_str_eq(str1, str2);
+
+#test d_3
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%dsdfg";
+ck_assert_int_eq(s21_sprintf(str1, format, 4325), sprintf(str2, format, 4325));
+ck_assert_str_eq(str1, str2);
+
+#test d_4
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%ds%ddfg";
+ck_assert_int_eq(s21_sprintf(str1, format, 4325, -12333), sprintf(str2, format, 4325, -12333));
+ck_assert_str_eq(str1, str2);
+
+#test d_5
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%ds%ddfg";
+ck_assert_int_eq(s21_sprintf(str1, format, 4325, 0), sprintf(str2, format, 4325, 0));
+ck_assert_str_eq(str1, str2);
+
+#test d_6
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%ds%ddfg";
+ck_assert_int_eq(s21_sprintf(str1, format, 4325, -0), sprintf(str2, format, 4325, -0));
+ck_assert_str_eq(str1, str2);
+
+#test d_s
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%ds%d%sdfg";
+ck_assert_int_eq(s21_sprintf(str1, format, 4325, -12333, format), sprintf(str2, format, 4325, -12333, format));
+ck_assert_str_eq(str1, str2);
+
+#test d_s_c_persent
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%%%c%ds%d%sdfg";
+ck_assert_int_eq(s21_sprintf(str1, format, '\n', 4325, -12333, format), sprintf(str2, format, '\n', 4325, -12333, format));
+ck_assert_str_eq(str1, str2);
+
+#test i_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+int d = 10;
+char *format = "%i";
+ck_assert_int_eq(s21_sprintf(str1, format, d), sprintf(str2, format, d));
+ck_assert_str_eq(str1, str2);
+
+#test i_1
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%isdfg";
+ck_assert_int_eq(s21_sprintf(str1, format, 987654321), sprintf(str2, format, 987654321));
+ck_assert_str_eq(str1, str2);
+
+#test i_2
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "wae r%ign";
+ck_assert_int_eq(s21_sprintf(str1, format, -666), sprintf(str2, format, -666));
+ck_assert_str_eq(str1, str2);
+
+#test i_3
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%isdfg";
+ck_assert_int_eq(s21_sprintf(str1, format, 4325), sprintf(str2, format, 4325));
+ck_assert_str_eq(str1, str2);
+
+#test i_4
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%is%idfg";
+ck_assert_int_eq(s21_sprintf(str1, format, 4325, -12333), sprintf(str2, format, 4325, -12333));
+ck_assert_str_eq(str1, str2);
+
+#test i_s
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%is%i%sdfg";
+ck_assert_int_eq(s21_sprintf(str1, format, 4325, -12333, format), sprintf(str2, format, 4325, -12333, format));
+ck_assert_str_eq(str1, str2);
+
+#test i_d_s_c_persent
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%%%c%is%d%sdfg";
+ck_assert_int_eq(s21_sprintf(str1, format, '\n', 4325, -12333, format), sprintf(str2, format, '\n', 4325, -12333, format));
+ck_assert_str_eq(str1, str2);
+
+#test u_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%u";
+ck_assert_int_eq(s21_sprintf(str1, format, 2314), sprintf(str2, format, 2314));
+ck_assert_str_eq(str1, str2);
+
+#test u_1
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "sfgh%usfgh";
+ck_assert_int_eq(s21_sprintf(str1, format, 987654321), sprintf(str2, format, 987654321));
+ck_assert_str_eq(str1, str2);
+
+#test u_2
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%u%u";
+ck_assert_int_eq(s21_sprintf(str1, format, 30475, 4385), sprintf(str2, format, 30475, 4385));
+ck_assert_str_eq(str1, str2);
+
+#test u_s_c_pescent_d_i
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%u%u%u%s%c%%%d%i_0";
+ck_assert_int_eq(s21_sprintf(str1, format, 324, 54, 234523, "4352g", 'c', -43, 324), sprintf(str2, format, 324, 54, 234523, "4352g", 'c', -43, 324));
+ck_assert_str_eq(str1, str2);
+
+#test o_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%o";
+ck_assert_int_eq(s21_sprintf(str1, format, 2314), sprintf(str2, format, 2314));
+ck_assert_str_eq(str1, str2);
+
+#test o_1
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "sfgh%osfgh";
+ck_assert_int_eq(s21_sprintf(str1, format, 987654321), sprintf(str2, format, 987654321));
+ck_assert_str_eq(str1, str2);
+
+#test o_2
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%o%o";
+ck_assert_int_eq(s21_sprintf(str1, format, 30475, 4385), sprintf(str2, format, 30475, 4385));
+ck_assert_str_eq(str1, str2);
+
+#test o_u_s_c_pescent_d_i
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%c%i%d%o%u%%%d%s_0";
+ck_assert_int_eq(s21_sprintf(str1, format, 'c', -43, 324, 324, 54, 234523, "4352g"), sprintf(str2, format, 'c', -43, 324, 324, 54, 234523, "4352g"));
+ck_assert_str_eq(str1, str2);
+
+#test x_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%x";
+ck_assert_int_eq(s21_sprintf(str1, format, 11), sprintf(str2, format, 11));
+ck_assert_str_eq(str1, str2);
+
+#test x_1
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "sfgh%xsfgh";
+ck_assert_int_eq(s21_sprintf(str1, format, 987654321), sprintf(str2, format, 987654321));
+ck_assert_str_eq(str1, str2);
+
+#test x_2
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%x%x";
+ck_assert_int_eq(s21_sprintf(str1, format, 30475, 4385), sprintf(str2, format, 30475, 4385));
+ck_assert_str_eq(str1, str2);
+
+#test x_o_u_s_c_pescent_d_i
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%c%i%x%o%u%%%d%s_0";
+ck_assert_int_eq(s21_sprintf(str1, format, 'c', -43, 324, 324, 54, 234523, "4352g"), sprintf(str2, format, 'c', -43, 324, 324, 54, 234523, "4352g"));
+ck_assert_str_eq(str1, str2);
+
+#test X_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%X";
+ck_assert_int_eq(s21_sprintf(str1, format, 11), sprintf(str2, format, 11));
+ck_assert_str_eq(str1, str2);
+
+#test X_1
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "sfgh%Xsfgh";
+ck_assert_int_eq(s21_sprintf(str1, format, 987654321), sprintf(str2, format, 987654321));
+ck_assert_str_eq(str1, str2);
+
+#test X_2
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%X%X";
+ck_assert_int_eq(s21_sprintf(str1, format, 30475, 4385), sprintf(str2, format, 30475, 4385));
+ck_assert_str_eq(str1, str2);
+
+#test X_o_u_s_c_pescent_d_i
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%c%i%X%o%u%%%d%s_0";
+ck_assert_int_eq(s21_sprintf(str1, format, 'c', -43, 324, 324, 54, 234523, "4352g"), sprintf(str2, format, 'c', -43, 324, 324, 54, 234523, "4352g"));
+ck_assert_str_eq(str1, str2);
+
+#test p_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%p";
+ck_assert_int_eq(s21_sprintf(str1, format, (void *)11), sprintf(str2, format, (void *)11));
+ck_assert_str_eq(str1, str2);
+
+#test p_1
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%p";
+ck_assert_int_eq(s21_sprintf(str1, format, (void *)-11), sprintf(str2, format, (void *)-11));
+ck_assert_str_eq(str1, str2);
+
+#test p_3
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%p";
+ck_assert_int_eq(s21_sprintf(str1, format, str1), sprintf(str2, format, str1));
+ck_assert_str_eq(str1, str2);
+
+#test p_4
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%p%p%p";
+ck_assert_int_eq(s21_sprintf(str1, format, str1, str2, format), sprintf(str2, format, str1, str2, format));
+ck_assert_str_eq(str1, str2);
+
+#test p_5
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%p";
+ck_assert_int_eq(s21_sprintf(str1, format, (void *)0), sprintf(str2, format, (void *)0));
+ck_assert_str_eq(str1, str2);
+
+#test p_s_c_d_i_u
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%p%p%p%s%c%d%i%u";
+ck_assert_int_eq(s21_sprintf(str1, format, str1, str2, format, "yees", '\t', -6534, -24356245, 544), sprintf(str2, format, str1, str2, format, "yees", '\t', -6534, -24356245, 544));
+ck_assert_str_eq(str1, str2);
+
+#test n_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%n";
+int n1, n2;
+ck_assert_int_eq(s21_sprintf(str1, format, &n1), sprintf(str2, format, &n2));
+ck_assert_str_eq(str1, str2);
+ck_assert_int_eq(n1, n2);
+
+#test n_s
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%s %n";
+int n1, n2;
+ck_assert_int_eq(s21_sprintf(str1, format, "sdfgs", &n1), sprintf(str2, format, "sdfgs", &n2));
+ck_assert_str_eq(str1, str2);
+ck_assert_int_eq(n1, n2);
+
+#test n_c_persent
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%c%%%n";
+int n1, n2;
+ck_assert_int_eq(s21_sprintf(str1, format, 'o', &n1), sprintf(str2, format, 'o', &n2));
+ck_assert_str_eq(str1, str2);
+ck_assert_int_eq(n1, n2);
+
+#test n_c_persent_s
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%c%%%s%n";
+int n1, n2;
+ck_assert_int_eq(s21_sprintf(str1, format, 'o', "u", &n1), sprintf(str2, format, 'o', "u", &n2));
+ck_assert_str_eq(str1, str2);
+ck_assert_int_eq(n1, n2);
+
+#test f_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%f";
+ck_assert_int_eq(s21_sprintf(str1, format, 1.), sprintf(str2, format, 1.));
+ck_assert_str_eq(str1, str2);
+
+#test f_1
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%f";
+ck_assert_int_eq(s21_sprintf(str1, format, 1.1234567), sprintf(str2, format, 1.1234567));
+ck_assert_str_eq(str1, str2);
+
+#test f_3
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%f";
+ck_assert_int_eq(s21_sprintf(str1, format, 112345.376567), sprintf(str2, format, 112345.376567));
+ck_assert_str_eq(str1, str2);
+
+#test f_4
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%f";
+ck_assert_int_eq(s21_sprintf(str1, format, -246582657852607.), sprintf(str2, format, -246582657852607.));
+ck_assert_str_eq(str1, str2);
+
+#test f_5
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%f";
+ck_assert_int_eq(s21_sprintf(str1, format, 0.), sprintf(str2, format, 0.));
+ck_assert_str_eq(str1, str2);
+
+#test f_6
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%f";
+ck_assert_int_eq(s21_sprintf(str1, format, -0.), sprintf(str2, format, -0.));
+ck_assert_str_eq(str1, str2);
+
+#test f_7
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%f";
+ck_assert_int_eq(s21_sprintf(str1, format, -.64529834247886), sprintf(str2, format, -.64529834247886));
+ck_assert_str_eq(str1, str2);
+
+#test f_8
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "shdfg%f5li7ryjm";
+ck_assert_int_eq(s21_sprintf(str1, format, 64529834247886.), sprintf(str2, format, 64529834247886.));
+ck_assert_str_eq(str1, str2);
+
+#test f_9
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "thn%f%fbeyru";
+ck_assert_int_eq(s21_sprintf(str1, format, 64529834247886., 0.), sprintf(str2, format, 64529834247886., 0.));
+ck_assert_str_eq(str1, str2);
+
+#test f_10
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "thn%f%fbeyru";
+ck_assert_int_eq(s21_sprintf(str1, format, 64529834247886., 0.), sprintf(str2, format, 64529834247886., 0.));
+ck_assert_str_eq(str1, str2);
+
+#test f_11
+#ifndef __linux__
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%f";
+float f = 10000000000000000000000000000000000000.;
+ck_assert_int_eq(s21_sprintf(str1, format, f), sprintf(str2, format, f));
+ck_assert_str_eq(str1, str2);
+#endif
+
+#test f_12
+#ifndef __linux__
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%f";
+float f = -9999999999999999994625264524568235234.;
+ck_assert_int_eq(s21_sprintf(str1, format, f), sprintf(str2, format, f));
+ck_assert_str_eq(str1, str2);
+#endif
+
+#test hd_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+short int d = 10;
+char *format = "%hd";
+ck_assert_int_eq(s21_sprintf(str1, format, d), sprintf(str2, format, d));
+ck_assert_str_eq(str1, str2);
+
+#test hd_1
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%hdsdfg";
+ck_assert_int_eq(s21_sprintf(str1, format, -326760), sprintf(str2, format, -326760));
+ck_assert_str_eq(str1, str2);
+
+#test hd_2
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "dfg%hdmety";
+ck_assert_int_eq(s21_sprintf(str1, format, -667896), sprintf(str2, format, -667896));
+ck_assert_str_eq(str1, str2);
+
+#test hd_3
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%hdsdfg";
+ck_assert_int_eq(s21_sprintf(str1, format, 47325), sprintf(str2, format, 47325));
+ck_assert_str_eq(str1, str2);
+
+#test hd_4
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%hds%hddfg";
+ck_assert_int_eq(s21_sprintf(str1, format, 4325, -12333), sprintf(str2, format, 4325, -12333));
+ck_assert_str_eq(str1, str2);
+
+#test hd_5
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%hds%hddfg";
+ck_assert_int_eq(s21_sprintf(str1, format, 4325, 0), sprintf(str2, format, 4325, 0));
+ck_assert_str_eq(str1, str2);
+
+#test hd_6
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%hds%hddfg";
+ck_assert_int_eq(s21_sprintf(str1, format, 4325, -0), sprintf(str2, format, 4325, -0));
+ck_assert_str_eq(str1, str2);
+
+#test hd_s
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%hds%hd%sdfg";
+ck_assert_int_eq(s21_sprintf(str1, format, 4325, -123733, format), sprintf(str2, format, 4325, -123733, format));
+ck_assert_str_eq(str1, str2);
+
+#test hd_s_c_persent
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%%%c%hds%hd%sdfg";
+ck_assert_int_eq(s21_sprintf(str1, format, '\n', 4325, -1236733, format), sprintf(str2, format, '\n', 4325, -1236733, format));
+ck_assert_str_eq(str1, str2);
+
+#test hi_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+short int d = 10;
+char *format = "%hi";
+ck_assert_int_eq(s21_sprintf(str1, format, d), sprintf(str2, format, d));
+ck_assert_str_eq(str1, str2);
+
+#test hi_1
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%isdfg";
+ck_assert_int_eq(s21_sprintf(str1, format, 327060), sprintf(str2, format, 327060));
+ck_assert_str_eq(str1, str2);
+
+#test hi_2
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "wae r%hign";
+ck_assert_int_eq(s21_sprintf(str1, format, -666), sprintf(str2, format, -666));
+ck_assert_str_eq(str1, str2);
+
+#test hi_3
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%hisdfg";
+ck_assert_int_eq(s21_sprintf(str1, format, 499325), sprintf(str2, format, 499325));
+ck_assert_str_eq(str1, str2);
+
+#test hi_4
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%his%hidfg";
+ck_assert_int_eq(s21_sprintf(str1, format, 4325, -12333), sprintf(str2, format, 4325, -12333));
+ck_assert_str_eq(str1, str2);
+
+#test hi_s
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%his%hi%sdfg";
+ck_assert_int_eq(s21_sprintf(str1, format, 4325, -12333, format), sprintf(str2, format, 4325, -12333, format));
+ck_assert_str_eq(str1, str2);
+
+#test hi_d_s_c_persent
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%%%c%his%d%sdfg";
+ck_assert_int_eq(s21_sprintf(str1, format, '\n', 4325, -1267333, format), sprintf(str2, format, '\n', 4325, -1267333, format));
+ck_assert_str_eq(str1, str2);
+
+#test hu_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%u";
+ck_assert_int_eq(s21_sprintf(str1, format, 2314), sprintf(str2, format, 2314));
+ck_assert_str_eq(str1, str2);
+
+#test hu_1
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "sfgh%husfgh";
+ck_assert_int_eq(s21_sprintf(str1, format, 32760), sprintf(str2, format, 32760));
+ck_assert_str_eq(str1, str2);
+
+#test hu_2
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%hu%hu";
+ck_assert_int_eq(s21_sprintf(str1, format, 30422275, 4385), sprintf(str2, format, 30422275, 4385));
+ck_assert_str_eq(str1, str2);
+
+#test hu_s_c_pescent_d_i
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%hu%hu%hu%s%c%%%d%i_0";
+ck_assert_int_eq(s21_sprintf(str1, format, 324, 54, 24523, "4352g", 'c', -43, 324), sprintf(str2, format, 324, 54, 24523, "4352g", 'c', -43, 324));
+ck_assert_str_eq(str1, str2);
+
+#test ho_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%ho";
+ck_assert_int_eq(s21_sprintf(str1, format, 2314), sprintf(str2, format, 2314));
+ck_assert_str_eq(str1, str2);
+
+#test ho_1
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "sfgh%hosfgh";
+ck_assert_int_eq(s21_sprintf(str1, format, 65336454), sprintf(str2, format, 65336454));
+ck_assert_str_eq(str1, str2);
+
+#test ho_2
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%ho%ho";
+ck_assert_int_eq(s21_sprintf(str1, format, 30475, 4385), sprintf(str2, format, 30475, 4385));
+ck_assert_str_eq(str1, str2);
+
+#test ho_u_s_c_pescent_d_i
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%c%hi%hd%ho%hu%%%hd%s_0";
+ck_assert_int_eq(s21_sprintf(str1, format, 'c', -43, 324, 324, 54, 23453, "4352g"), sprintf(str2, format, 'c', -43, 324, 324, 54, 23453, "4352g"));
+ck_assert_str_eq(str1, str2);
+
+#test hx_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%x";
+ck_assert_int_eq(s21_sprintf(str1, format, 11), sprintf(str2, format, 11));
+ck_assert_str_eq(str1, str2);
+
+#test hx_1
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "sfgh%hxsfgh";
+ck_assert_int_eq(s21_sprintf(str1, format, 98765761), sprintf(str2, format, 98765761));
+ck_assert_str_eq(str1, str2);
+
+#test hx_2
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%hx%hx";
+ck_assert_int_eq(s21_sprintf(str1, format, 30475, 4385), sprintf(str2, format, 30475, 4385));
+ck_assert_str_eq(str1, str2);
+
+#test hx_o_u_s_c_pescent_d_i
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%c%hi%hx%ho%hu%%%hd%s_0";
+ck_assert_int_eq(s21_sprintf(str1, format, 'c', -43, 324, 324, 54, 2343, "4352g"), sprintf(str2, format, 'c', -43, 324, 324, 54, 2343, "4352g"));
+ck_assert_str_eq(str1, str2);
+
+#test hX_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%hX";
+ck_assert_int_eq(s21_sprintf(str1, format, 11), sprintf(str2, format, 11));
+ck_assert_str_eq(str1, str2);
+
+#test hX_1
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "sfgh%hXsfgh";
+ck_assert_int_eq(s21_sprintf(str1, format, 575), sprintf(str2, format, 575));
+ck_assert_str_eq(str1, str2);
+
+#test hX_2
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%hX%hX";
+ck_assert_int_eq(s21_sprintf(str1, format, 302475, 4385), sprintf(str2, format, 302475, 4385));
+ck_assert_str_eq(str1, str2);
+
+#test hX_o_u_s_c_pescent_d_i
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%c%hi%hX%ho%hu%%%d%s_0";
+ck_assert_int_eq(s21_sprintf(str1, format, 'c', -43, 324, 324, 54, 234523, "4352g"), sprintf(str2, format, 'c', -43, 324, 324, 54, 234523, "4352g"));
+ck_assert_str_eq(str1, str2);
+
+#test dl_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+long int d = 10;
+char *format = "%ld";
+ck_assert_int_eq(s21_sprintf(str1, format, d), sprintf(str2, format, d));
+ck_assert_str_eq(str1, str2);
+
+#test dl_1
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%ldsdfg";
+ck_assert_int_eq(s21_sprintf(str1, format, 2147483645), sprintf(str2, format, 2147483645));
+ck_assert_str_eq(str1, str2);
+
+#test dl_2
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "dfg%ldmety";
+ck_assert_int_eq(s21_sprintf(str1, format, -666475764), sprintf(str2, format, -666475764));
+ck_assert_str_eq(str1, str2);
+
+#test dl_3
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%ldsdfg";
+ck_assert_int_eq(s21_sprintf(str1, format, 4326665), sprintf(str2, format, 4326665));
+ck_assert_str_eq(str1, str2);
+
+#test dl_4
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%lds%lddfg";
+ck_assert_int_eq(s21_sprintf(str1, format, 4325, -12333), sprintf(str2, format, 4325, -12333));
+ck_assert_str_eq(str1, str2);
+
+#test dl_5
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%lds%lddfg";
+ck_assert_int_eq(s21_sprintf(str1, format, 4325, 0), sprintf(str2, format, 4325, 0));
+ck_assert_str_eq(str1, str2);
+
+#test dl_6
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%lds%lddfg";
+ck_assert_int_eq(s21_sprintf(str1, format, 4325, -0), sprintf(str2, format, 4325, -0));
+ck_assert_str_eq(str1, str2);
+
+#test dl_s
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%lds%ld%sdfg";
+ck_assert_int_eq(s21_sprintf(str1, format, 43456525, -12333, format), sprintf(str2, format, 43456525, -12333, format));
+ck_assert_str_eq(str1, str2);
+
+#test dl_s_c_persent
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%%%c%lds%ld%sdfg";
+long int d = 43256675, f = -12233344;
+ck_assert_int_eq(s21_sprintf(str1, format, 't', d, f, format), sprintf(str2, format, 't', d, f, format));
+ck_assert_str_eq(str1, str2);
+
+#test il_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+long int d = 10;
+char *format = "%li";
+ck_assert_int_eq(s21_sprintf(str1, format, d), sprintf(str2, format, d));
+ck_assert_str_eq(str1, str2);
+
+#test il_1
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%lisdfg";
+ck_assert_int_eq(s21_sprintf(str1, format, 2147483645), sprintf(str2, format, 2147483645));
+ck_assert_str_eq(str1, str2);
+
+#test il_2
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "dfg%limety";
+ck_assert_int_eq(s21_sprintf(str1, format, -666475764), sprintf(str2, format, -666475764));
+ck_assert_str_eq(str1, str2);
+
+#test il_3
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%lidsdfg";
+ck_assert_int_eq(s21_sprintf(str1, format, 4326665), sprintf(str2, format, 4326665));
+ck_assert_str_eq(str1, str2);
+
+#test il_4
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%lids%lddfg";
+ck_assert_int_eq(s21_sprintf(str1, format, 4325, -12333), sprintf(str2, format, 4325, -12333));
+ck_assert_str_eq(str1, str2);
+
+#test il_5
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%lids%liddfg";
+ck_assert_int_eq(s21_sprintf(str1, format, 4325, 0), sprintf(str2, format, 4325, 0));
+ck_assert_str_eq(str1, str2);
+
+#test il_6
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%lds%liddfg";
+ck_assert_int_eq(s21_sprintf(str1, format, 4325, -0), sprintf(str2, format, 4325, -0));
+ck_assert_str_eq(str1, str2);
+
+#test il_s
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%lids%lid%sdfg";
+ck_assert_int_eq(s21_sprintf(str1, format, 43456525, -12333, format), sprintf(str2, format, 43456525, -12333, format));
+ck_assert_str_eq(str1, str2);
+
+#test il_s_c_persent
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%%%c%lids%ld%sdfg";
+long int d = 43256675, f = -12233344;
+ck_assert_int_eq(s21_sprintf(str1, format, '\n', d, f, format), sprintf(str2, format, '\n', d, f, format));
+ck_assert_str_eq(str1, str2);
+
+#test ul_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%lu";
+ck_assert_int_eq(s21_sprintf(str1, format, 2314), sprintf(str2, format, 2314));
+ck_assert_str_eq(str1, str2);
+
+#test ul_1
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "sfgh%lusfgh";
+ck_assert_int_eq(s21_sprintf(str1, format, 987654321), sprintf(str2, format, 987654321));
+ck_assert_str_eq(str1, str2);
+
+#test ul_2
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%lu%lu";
+ck_assert_int_eq(s21_sprintf(str1, format, 36770475, 4385), sprintf(str2, format, 36770475, 4385));
+ck_assert_str_eq(str1, str2);
+
+#test ul_s_c_pescent_d_i
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%lu%lu%lu%s%c%%%ld%i_0";
+ck_assert_int_eq(s21_sprintf(str1, format, 32456644, 54, 234523, "4352g", 'c', -43, 324), sprintf(str2, format, 32456644, 54, 234523, "4352g", 'c', -43, 324));
+ck_assert_str_eq(str1, str2);
+
+#test ol_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%lo";
+ck_assert_int_eq(s21_sprintf(str1, format, 2314), sprintf(str2, format, 2314));
+ck_assert_str_eq(str1, str2);
+
+#test ol_1
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "sfgh%losfgh";
+ck_assert_int_eq(s21_sprintf(str1, format, 987654321), sprintf(str2, format, 987654321));
+ck_assert_str_eq(str1, str2);
+
+#test ol_2
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%lo%lo";
+ck_assert_int_eq(s21_sprintf(str1, format, 3045575, 4385), sprintf(str2, format, 3045575, 4385));
+ck_assert_str_eq(str1, str2);
+
+#test ol_u_s_c_pescent_d_i
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%c%li%ld%lo%lu%%%ld%s_0";
+ck_assert_int_eq(s21_sprintf(str1, format, 'c', -43, 324, 324, 54, 234523, "4352g"), sprintf(str2, format, 'c', -43, 324, 324, 54, 234523, "4352g"));
+ck_assert_str_eq(str1, str2);
+
+#test xl_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%lx";
+ck_assert_int_eq(s21_sprintf(str1, format, 11), sprintf(str2, format, 11));
+ck_assert_str_eq(str1, str2);
+
+#test xl_1
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "sfgh%lxsfgh";
+ck_assert_int_eq(s21_sprintf(str1, format, 987654321), sprintf(str2, format, 987654321));
+ck_assert_str_eq(str1, str2);
+
+#test xl_2
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%lx%lx";
+ck_assert_int_eq(s21_sprintf(str1, format, 30333475, 4385), sprintf(str2, format,  30333475, 4385));
+ck_assert_str_eq(str1, str2);
+
+#test xl_o_u_s_c_pescent_d_i
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%c%li%lx%lo%lu%%%ld%s_0";
+ck_assert_int_eq(s21_sprintf(str1, format, 'c', -43, 4294967260, 324, 54, 234523, "4352g"), sprintf(str2, format, 'c', -43, 4294967260, 324, 54, 234523, "4352g"));
+ck_assert_str_eq(str1, str2);
+
+#test Xl_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%lX";
+ck_assert_int_eq(s21_sprintf(str1, format, 11), sprintf(str2, format, 11));
+ck_assert_str_eq(str1, str2);
+
+#test Xl_1
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "sfgh%lXsfgh";
+ck_assert_int_eq(s21_sprintf(str1, format, 987654321), sprintf(str2, format, 987654321));
+ck_assert_str_eq(str1, str2);
+
+#test Xl_2
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%lX////%lX";
+ck_assert_int_eq(s21_sprintf(str1, format, 30475, 4294967260), sprintf(str2, format, 30475, 4294967260));
+ck_assert_str_eq(str1, str2);
+
+#test Xl_o_u_s_c_pescent_d_i
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%c%li%lX%lo%lu%%%ld%s_0";
+ck_assert_int_eq(s21_sprintf(str1, format, 'c', -43, 324, 324, 54, 234523, "4352g"), sprintf(str2, format, 'c', -43, 324, 324, 54, 234523, "4352g"));
+ck_assert_str_eq(str1, str2);
+
+#test sw_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%s";
+ck_assert_int_eq(s21_sprintf(str1, format, "qwe"), sprintf(str2, format, "qwe"));
+ck_assert_str_eq(str1, str2);
+
+#test sw_1
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%1s";
+ck_assert_int_eq(s21_sprintf(str1, format, "qwe"), sprintf(str2, format, "qwe"));
+ck_assert_str_eq(str1, str2);
+
+#test sw_2
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%2s";
+ck_assert_int_eq(s21_sprintf(str1, format, "qwe"), sprintf(str2, format, "qwe"));
+ck_assert_str_eq(str1, str2);
+
+#test sw_3
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%3s";
+ck_assert_int_eq(s21_sprintf(str1, format, "qwe"), sprintf(str2, format, "qwe"));
+ck_assert_str_eq(str1, str2);
+
+#test percentw_4
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%4s";
+ck_assert_int_eq(s21_sprintf(str1, format, "qwe"), sprintf(str2, format, "qwe"));
+ck_assert_str_eq(str1, str2);
+
+#test sw_5
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%5s";
+ck_assert_int_eq(s21_sprintf(str1, format, "qwe"), sprintf(str2, format, "qwe"));
+ck_assert_str_eq(str1, str2);
+
+#test sw_6
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%6s";
+ck_assert_int_eq(s21_sprintf(str1, format, "qwe"), sprintf(str2, format, "qwe"));
+ck_assert_str_eq(str1, str2);
+
+#test sw_7
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%7s";
+ck_assert_int_eq(s21_sprintf(str1, format, "qwe"), sprintf(str2, format, "qwe"));
+ck_assert_str_eq(str1, str2);
+
+#test sw_8
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%8s";
+ck_assert_int_eq(s21_sprintf(str1, format, "qwe"), sprintf(str2, format, "qwe"));
+ck_assert_str_eq(str1, str2);
+
+#test sw_9
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%9s";
+ck_assert_int_eq(s21_sprintf(str1, format, "qwe"), sprintf(str2, format, "qwe"));
+ck_assert_str_eq(str1, str2);
+
+#test cw_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%9c";
+ck_assert_int_eq(s21_sprintf(str1, format, 'd'), sprintf(str2, format, 'd'));
+ck_assert_str_eq(str1, str2);
+
+#test cw_1
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%3c";
+ck_assert_int_eq(s21_sprintf(str1, format, 'd'), sprintf(str2, format, 'd'));
+ck_assert_str_eq(str1, str2);
+
+#test cw_2
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%10c";
+ck_assert_int_eq(s21_sprintf(str1, format, 'd'), sprintf(str2, format, 'd'));
+ck_assert_str_eq(str1, str2);
+
+#test cw_3
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%1c";
+ck_assert_int_eq(s21_sprintf(str1, format, 'd'), sprintf(str2, format, 'd'));
+ck_assert_str_eq(str1, str2);
+
+#test cw_dw_fw_sw_uw_xw_Xw_ow_pw_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%10c%10d%10f%10s%10u%10x%10X%10o%10p";
+ck_assert_int_eq(s21_sprintf(str1, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1), sprintf(str2, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1));
+ck_assert_str_eq(str1, str2);
+
+#test cw_dw_fw_sw_uw_xw_Xw_ow_pw_1
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%1c%1d%1f%1s%1u%1x%1X%1o%1p";
+ck_assert_int_eq(s21_sprintf(str1, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1), sprintf(str2, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1));
+ck_assert_str_eq(str1, str2);
+
+#test cw_dw_fw_sw_uw_xw_Xw_ow_pw_2
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%2c%2d%2f%2s%2u%2x%2X%2o%2p";
+ck_assert_int_eq(s21_sprintf(str1, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1), sprintf(str2, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1));
+ck_assert_str_eq(str1, str2);
+
+#test cw_dw_fw_sw_uw_xw_Xw_ow_pw_3
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%3c%3d%3f%3s%3u%3x%3X%3o%3p";
+ck_assert_int_eq(s21_sprintf(str1, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1), sprintf(str2, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1));
+ck_assert_str_eq(str1, str2);
+
+#test cw_dw_fw_sw_uw_xw_Xw_ow_pw_4
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%4c%4d%4f%4s%4u%4x%4X%4o%4p";
+ck_assert_int_eq(s21_sprintf(str1, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1), sprintf(str2, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1));
+ck_assert_str_eq(str1, str2);
+
+#test cw_dw_fw_sw_uw_xw_Xw_ow_pw_5
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%5c%5d%5f%5s%5u%5x%5X%5o%5p";
+ck_assert_int_eq(s21_sprintf(str1, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1), sprintf(str2, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1));
+ck_assert_str_eq(str1, str2);
+
+#test cw_dw_fw_sw_uw_xw_Xw_ow_pw_6
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%6c%6d%6f%6s%6u%6x%6X%6o%6p";
+ck_assert_int_eq(s21_sprintf(str1, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1), sprintf(str2, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1));
+ck_assert_str_eq(str1, str2);
+
+#test cw_dw_fw_sw_uw_xw_Xw_ow_pw_7
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%7c%7d%7f%7s%7u%7x%7X%7o%7p";
+ck_assert_int_eq(s21_sprintf(str1, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1), sprintf(str2, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1));
+ck_assert_str_eq(str1, str2);
+
+#test cw_dw_fw_sw_uw_xw_Xw_ow_pw_8
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%8c%8d%8f%8s%8u%8x%8X%8o%8p";
+ck_assert_int_eq(s21_sprintf(str1, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1), sprintf(str2, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1));
+ck_assert_str_eq(str1, str2);
+
+#test cw_dw_fw_sw_uw_xw_Xw_ow_pw_9
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%9c%9d%9f%9s%9u%9x%9X%9o%9p";
+ck_assert_int_eq(s21_sprintf(str1, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1), sprintf(str2, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1));
+ck_assert_str_eq(str1, str2);
+
+#test minus_w_cdfsuxXop_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%-10cjj%-10dj%-10fj%-10sj%-10uj%-10xj%-10Xj%-10oj%-10pj";
+ck_assert_int_eq(s21_sprintf(str1, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1), sprintf(str2, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1));
+ck_assert_str_eq(str1, str2);
+
+#test minus_w_cdfsuxXop_1
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%-1cb%-1db%-1fb%-1sb%-1ub%-1xb%-1Xb%-1ob%-1pb";
+ck_assert_int_eq(s21_sprintf(str1, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1), sprintf(str2, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1));
+ck_assert_str_eq(str1, str2);
+
+#test minus_w_cdfsuxXop_2
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%-2c%-2d%-2f%-2s%-2u%-2x%-2X%-2o%-2p";
+ck_assert_int_eq(s21_sprintf(str1, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1), sprintf(str2, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1));
+ck_assert_str_eq(str1, str2);
+
+#test minus_w_cdfsuxXop_3
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%-3c%-3d%-3f%-3s%-3u%-3x%-3X%-3o%-3p";
+ck_assert_int_eq(s21_sprintf(str1, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1), sprintf(str2, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1));
+ck_assert_str_eq(str1, str2);
+
+#test minus_w_cdfsuxXop_4
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%-4c%-4d%-4f%-4s%-4u%-4x%-4X%-4o%-4p";
+ck_assert_int_eq(s21_sprintf(str1, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1), sprintf(str2, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1));
+ck_assert_str_eq(str1, str2);
+
+#test minus_w_cdfsuxXop_5
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%-5c%-5d%-5f%-5s%-5u%-5x%-5X%-5o%-5p";
+ck_assert_int_eq(s21_sprintf(str1, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1), sprintf(str2, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1));
+ck_assert_str_eq(str1, str2);
+
+#test minus_w_cdfsuxXop_6
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%-6c%-6d%-6f%-6s%-6u%-6x%-6X%-6o%-6p";
+ck_assert_int_eq(s21_sprintf(str1, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1), sprintf(str2, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1));
+ck_assert_str_eq(str1, str2);
+
+#test minus_w_cdfsuxXop_7
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%-7c%-7d%-7f%-7s%-7u%-7x%-7X%-7o%-7p";
+ck_assert_int_eq(s21_sprintf(str1, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1), sprintf(str2, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1));
+ck_assert_str_eq(str1, str2);
+
+#test minus_w_cdfsuxXop_8
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%-8c%-8d%-8f%-8s%-8u%-8x%-8X%-8o%-8p";
+ck_assert_int_eq(s21_sprintf(str1, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1), sprintf(str2, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1));
+ck_assert_str_eq(str1, str2);
+
+#test minus_w_cdfsuxXop_9
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%-9ch%-9dh%-9fh%-9sh%-9uh%-9xh%-9Xh%-9oh%-9ph";
+ck_assert_int_eq(s21_sprintf(str1, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1), sprintf(str2, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1));
+ck_assert_str_eq(str1, str2);
+
+#test plus_w_cdfsuxXop_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%+10cjj%+10dj%+10fj%+10sj%+10uj%+10xj%+10Xj%+10oj%+10pj";
+ck_assert_int_eq(s21_sprintf(str1, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1), sprintf(str2, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1));
+ck_assert_str_eq(str1, str2);
+
+#test plus_w_cdfsuxXop_1
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%+1cb%+1db%+1fb%+1sb%+1ub%+1xb%+1Xb%+1ob%+1pb";
+ck_assert_int_eq(s21_sprintf(str1, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1), sprintf(str2, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1));
+ck_assert_str_eq(str1, str2);
+
+#test plus_w_cdfsuxXop_2
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%+2c%+2d%+2f%+2s%+2u%+2x%+2X%+2o%+2p";
+ck_assert_int_eq(s21_sprintf(str1, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1), sprintf(str2, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1));
+ck_assert_str_eq(str1, str2);
+
+#test plus_w_cdfsuxXop_3
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%+3c%+3d%+3f%+3s%+3u%+3x%+3X%+3o%+3p";
+ck_assert_int_eq(s21_sprintf(str1, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1), sprintf(str2, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1));
+ck_assert_str_eq(str1, str2);
+
+#test plus_w_cdfsuxXop_4
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%+4c%+4d%+4f%+4s%+4u%+4x%+4X%+4o%+4p";
+ck_assert_int_eq(s21_sprintf(str1, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1), sprintf(str2, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1));
+ck_assert_str_eq(str1, str2);
+
+#test plus_w_cdfsuxXop_5
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%+5c%+5d%+5f%+5s%+5u%+5x%+5X%+5o%+5p";
+ck_assert_int_eq(s21_sprintf(str1, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1), sprintf(str2, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1));
+ck_assert_str_eq(str1, str2);
+
+#test plus_w_cdfsuxXop_6
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%+6c%+6d%+6f%+6s%+6u%+6x%+6X%+6o%+6p";
+ck_assert_int_eq(s21_sprintf(str1, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1), sprintf(str2, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1));
+ck_assert_str_eq(str1, str2);
+
+#test plus_w_cdfsuxXop_7
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%+7c%+7d%+7f%+7s%+7u%+7x%+7X%+7o%+7p";
+ck_assert_int_eq(s21_sprintf(str1, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1), sprintf(str2, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1));
+ck_assert_str_eq(str1, str2);
+
+#test plus_w_cdfsuxXop_8
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%+8c%+8d%+8f%+8s%+8u%+8x%+8X%+8o%+8p";
+ck_assert_int_eq(s21_sprintf(str1, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1), sprintf(str2, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1));
+ck_assert_str_eq(str1, str2);
+
+#test plus_w_cdfsuxXop_9
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%+9ch%+9dh%+9fh%+9sh%+9uh%+9xh%+9Xh%+9oh%+9ph";
+ck_assert_int_eq(s21_sprintf(str1, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1), sprintf(str2, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1));
+ck_assert_str_eq(str1, str2);
+
+#test plus_w_cdfsuxXop_10
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%+10ch%+10dh%+10fh%+10sh%+10uh%+10xh%+10Xh%+10oh%+10ph";
+ck_assert_int_eq(s21_sprintf(str1, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1), sprintf(str2, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1));
+ck_assert_str_eq(str1, str2);
+
+#test w_cdfsuxXop_100
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%100ch%100dh%100fh%100sh%100uh%100xh%100Xh%100oh%100ph";
+ck_assert_int_eq(s21_sprintf(str1, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1), sprintf(str2, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1));
+ck_assert_str_eq(str1, str2);
+
+#test minus_w_cdfsuxXop_100
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%-100ch%-100dh%-100fh%-100sh%-100uh%-100xh%-100Xh%-100oh%-100ph";
+ck_assert_int_eq(s21_sprintf(str1, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1), sprintf(str2, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1));
+ck_assert_str_eq(str1, str2);
+
+#test plus_w_cdfsuxXop_100
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%+100ch%+100dh%+100fh%+100sh%+100uh%+100xh%+100Xh%+100oh%+100ph";
+ck_assert_int_eq(s21_sprintf(str1, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1), sprintf(str2, format, '9', 44, .60, "qwert", 53424, 234555, 654345, 324, 1));
+ck_assert_str_eq(str1, str2);
+
+#test pre_d_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+int d = 10;
+char *format = "%.1d";
+ck_assert_int_eq(s21_sprintf(str1, format, d), sprintf(str2, format, d));
+ck_assert_str_eq(str1, str2);
+
+#test pre_d_1
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%.64dsdfg";
+ck_assert_int_eq(s21_sprintf(str1, format, 987654321), sprintf(str2, format, 987654321));
+ck_assert_str_eq(str1, str2);
+
+#test pre_d_2
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "dfg%.6dmety";
+ck_assert_int_eq(s21_sprintf(str1, format, -666), sprintf(str2, format, -666));
+ck_assert_str_eq(str1, str2);
+
+#test pre_d_3
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%.55dsdfg";
+ck_assert_int_eq(s21_sprintf(str1, format, 4325), sprintf(str2, format, 4325));
+ck_assert_str_eq(str1, str2);
+
+#test pre_d_4
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%.6ds%ddfg";
+ck_assert_int_eq(s21_sprintf(str1, format, 4325, -12333), sprintf(str2, format, 4325, -12333));
+ck_assert_str_eq(str1, str2);
+
+#test pre_d_5
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%.10ds%ddfg";
+ck_assert_int_eq(s21_sprintf(str1, format, 4325, 0), sprintf(str2, format, 4325, 0));
+ck_assert_str_eq(str1, str2);
+
+#test pre_d_6
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%.ds%ddfg";
+ck_assert_int_eq(s21_sprintf(str1, format, 4325, -0), sprintf(str2, format, 4325, -0));
+ck_assert_str_eq(str1, str2);
+
+#test pre_d_7
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+int d = 0;
+char *format = "%.1d";
+ck_assert_int_eq(s21_sprintf(str1, format, d), sprintf(str2, format, d));
+ck_assert_str_eq(str1, str2);
+
+#test pre_d_8
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+int d = -0;
+char *format = "%.1d";
+ck_assert_int_eq(s21_sprintf(str1, format, d), sprintf(str2, format, d));
+ck_assert_str_eq(str1, str2);
+
+#test pre_d_s
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%.ds%.3d%.3sdfg";
+ck_assert_int_eq(s21_sprintf(str1, format, 4325, -12333, format), sprintf(str2, format, 4325, -12333, format));
+ck_assert_str_eq(str1, str2);
+
+#test pre_f_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%.3f";
+ck_assert_int_eq(s21_sprintf(str1, format, 1.), sprintf(str2, format, 1.));
+ck_assert_str_eq(str1, str2);
+
+#test pre_f_1
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%.f";
+ck_assert_int_eq(s21_sprintf(str1, format, 1.56245626462), sprintf(str2, format, 1.56245626462));
+ck_assert_str_eq(str1, str2);
+
+#test pre_f_2
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%.12f";
+ck_assert_int_eq(s21_sprintf(str1, format, 1.45656465465), sprintf(str2, format, 1.45656465465));
+ck_assert_str_eq(str1, str2);
+
+#test pre_f_3
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%.7f";
+ck_assert_int_eq(s21_sprintf(str1, format, 20645720645.4599999999), sprintf(str2, format, 20645720645.4599999999));
+ck_assert_str_eq(str1, str2);
+
+#test pre_f_4
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%.0f";
+ck_assert_int_eq(s21_sprintf(str1, format, 0.), sprintf(str2, format, 0.));
+ck_assert_str_eq(str1, str2);
+
+#test pre_f_5
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%.0f";
+ck_assert_int_eq(s21_sprintf(str1, format, -0.), sprintf(str2, format, -0.));
+ck_assert_str_eq(str1, str2);
+
+#test pre_f_6
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "dfg%.66fmety";
+ck_assert_int_eq(s21_sprintf(str1, format, -0.), sprintf(str2, format, -0.));
+ck_assert_str_eq(str1, str2);
+
+#test pre_o_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+int d = 0;
+char *format = "%.1o";
+ck_assert_int_eq(s21_sprintf(str1, format, d), sprintf(str2, format, d));
+ck_assert_str_eq(str1, str2);
+
+#test pre_o_1
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%.64osofg";
+ck_assert_int_eq(s21_sprintf(str1, format, 987654321), sprintf(str2, format, 987654321));
+ck_assert_str_eq(str1, str2);
+
+#test pre_o_2
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "dfg%.6omety";
+ck_assert_int_eq(s21_sprintf(str1, format, -0), sprintf(str2, format, -0));
+ck_assert_str_eq(str1, str2);
+
+#test pre_o_3
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "dfg%.66omety";
+ck_assert_int_eq(s21_sprintf(str1, format, -0), sprintf(str2, format, -0));
+ck_assert_str_eq(str1, str2);
+
+#test pre_u_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+int d = 0;
+char *format = "%.1u";
+ck_assert_int_eq(s21_sprintf(str1, format, d), sprintf(str2, format, d));
+ck_assert_str_eq(str1, str2);
+
+#test pre_u_1
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%.64usofg";
+ck_assert_int_eq(s21_sprintf(str1, format, 987654321), sprintf(str2, format, 987654321));
+ck_assert_str_eq(str1, str2);
+
+#test pre_u_2
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "dfg%.6umety";
+ck_assert_int_eq(s21_sprintf(str1, format, -0), sprintf(str2, format, -0));
+ck_assert_str_eq(str1, str2);
+
+#test pre_u_3
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "dfg%.66umety";
+ck_assert_int_eq(s21_sprintf(str1, format, -0), sprintf(str2, format, -0));
+ck_assert_str_eq(str1, str2);
+
+#test pre_x_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+int d = 0;
+char *format = "%.1x";
+ck_assert_int_eq(s21_sprintf(str1, format, d), sprintf(str2, format, d));
+ck_assert_str_eq(str1, str2);
+
+#test pre_x_1
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%.64xsofg";
+ck_assert_int_eq(s21_sprintf(str1, format, 987654321), sprintf(str2, format, 987654321));
+ck_assert_str_eq(str1, str2);
+
+#test pre_x_2
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "dfg%.6xmety";
+ck_assert_int_eq(s21_sprintf(str1, format, -0), sprintf(str2, format, -0));
+ck_assert_str_eq(str1, str2);
+
+#test pre_x_3
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "dfg%.66xmety";
+ck_assert_int_eq(s21_sprintf(str1, format, -0), sprintf(str2, format, -0));
+ck_assert_str_eq(str1, str2);
+
+#test pre_X_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+int d = 0;
+char *format = "%.1X";
+ck_assert_int_eq(s21_sprintf(str1, format, d), sprintf(str2, format, d));
+ck_assert_str_eq(str1, str2);
+
+#test pre_X_1
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%.64Xsofg";
+ck_assert_int_eq(s21_sprintf(str1, format, 987654321), sprintf(str2, format, 987654321));
+ck_assert_str_eq(str1, str2);
+
+#test pre_X_2
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "dfg%.6Xmety";
+ck_assert_int_eq(s21_sprintf(str1, format, -0), sprintf(str2, format, -0));
+ck_assert_str_eq(str1, str2);
+
+#test pre_X_3
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "dfg%.66Xmety";
+ck_assert_int_eq(s21_sprintf(str1, format, -0), sprintf(str2, format, -0));
+ck_assert_str_eq(str1, str2);
+
+#test pre_s_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%.66s";
+ck_assert_int_eq(s21_sprintf(str1, format, "yretrye"), sprintf(str2, format, "yretrye"));
+ck_assert_str_eq(str1, str2);
+
+#test pre_s_1
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%.s";
+ck_assert_int_eq(s21_sprintf(str1, format, "yretrye"), sprintf(str2, format, "yretrye"));
+ck_assert_str_eq(str1, str2);
+
+#test pre_s_2
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%.4s";
+ck_assert_int_eq(s21_sprintf(str1, format, "yretrye"), sprintf(str2, format, "yretrye"));
+ck_assert_str_eq(str1, str2);
+
+#test spase_d_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "% dj";
+ck_assert_int_eq(s21_sprintf(str1, format, 44), sprintf(str2, format,  44));
+ck_assert_str_eq(str1, str2);
+
+#test spase_i_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "% i";
+ck_assert_int_eq(s21_sprintf(str1, format, 59), sprintf(str2, format, 59));
+ck_assert_str_eq(str1, str2);
+
+#test spase_f_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "% fj";
+ck_assert_int_eq(s21_sprintf(str1, format, .60), sprintf(str2, format, .60));
+ck_assert_str_eq(str1, str2);
+
+#test star_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%*dq";
+ck_assert_int_eq(s21_sprintf(str1, format, 40, 9), sprintf(str2, format, 40, 9));
+ck_assert_str_eq(str1, str2);
+
+#test star_1
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%*dq%*s";
+ck_assert_int_eq(s21_sprintf(str1, format, 40, 9, 10, "45"), sprintf(str2, format, 40, 9, 10, "45"));
+ck_assert_str_eq(str1, str2);
+
+#test star_2
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%*u";
+ck_assert_int_eq(s21_sprintf(str1, format, 40, 9), sprintf(str2, format, 40, 9));
+ck_assert_str_eq(str1, str2);
+
+#test star_3
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%*p";
+ck_assert_int_eq(s21_sprintf(str1, format, 40, &str1), sprintf(str2, format, 40, &str1));
+ck_assert_str_eq(str1, str2);
+
+#test star_pre_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%.*dq";
+ck_assert_int_eq(s21_sprintf(str1, format, 40, 9), sprintf(str2, format, 40, 9));
+ck_assert_str_eq(str1, str2);
+
+#test star_pre_1
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%.*dq%.*s";
+ck_assert_int_eq(s21_sprintf(str1, format, 40, 9, 10, "45"), sprintf(str2, format, 40, 9, 10, "45"));
+ck_assert_str_eq(str1, str2);
+
+#test star_pre_2
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%.*u";
+ck_assert_int_eq(s21_sprintf(str1, format, 40, 9), sprintf(str2, format, 40, 9));
+ck_assert_str_eq(str1, str2);
+
+#test star_pre_3
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%.*p";
+s21_sprintf(str1, format, 40, &str1);
+ck_assert_int_eq(s21_sprintf(str1, format, 40, &str1), sprintf(str2, format, 40, &str1));
+ck_assert_str_eq(str1, str2);
+
+#test star_pre_d_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+int d = 10;
+char *format = "%.*d";
+ck_assert_int_eq(s21_sprintf(str1, format, 7, d), sprintf(str2, format,  7, d));
+ck_assert_str_eq(str1, str2);
+
+#test star_pre_d_1
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%.*dsdfg";
+ck_assert_int_eq(s21_sprintf(str1, format, 64, 987654321), sprintf(str2, format, 64, 987654321));
+ck_assert_str_eq(str1, str2);
+
+#test star_pre_d_2
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "dfg%.*dmety";
+ck_assert_int_eq(s21_sprintf(str1, format, 6, -666), sprintf(str2, format, 6, -666));
+ck_assert_str_eq(str1, str2);
+
+#test star_pre_d_3
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%.*dsdfg";
+ck_assert_int_eq(s21_sprintf(str1, format, 0, 4325), sprintf(str2, format, 0, 4325));
+ck_assert_str_eq(str1, str2);
+
+#test star_pre_d_4
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%.*ds%ddfg";
+ck_assert_int_eq(s21_sprintf(str1, format, -6, 4325, -12333), sprintf(str2, format, -6, 4325, -12333));
+ck_assert_str_eq(str1, str2);
+
+#test star_pre_d_5
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%.*ds%ddfg";
+ck_assert_int_eq(s21_sprintf(str1, format, 10, 4325, 0), sprintf(str2, format, 10, 4325, 0));
+ck_assert_str_eq(str1, str2);
+
+#test star_pre_d_6
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%.ds%.*ddfg";
+ck_assert_int_eq(s21_sprintf(str1, format, 4325, 3, -0), sprintf(str2, format, 4325, 3, -0));
+ck_assert_str_eq(str1, str2);
+
+#test star_pre_d_s
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%.ds%.*d%.3sdfg";
+ck_assert_int_eq(s21_sprintf(str1, format, 4325, -3, -12333, format), sprintf(str2, format, 4325, -3, -12333, format));
+ck_assert_str_eq(str1, str2);
+
+#test error_double_minus
+#ifndef __linux__
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%.--1ds";
+ck_assert_int_eq(s21_sprintf(str1, format, 4325), sprintf(str2, format, 4325));
+ck_assert_str_eq(str1, str2);
+#endif
+
+#test error_exta_digit
+#ifndef __linux__
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%.1qds";
+ck_assert_int_eq(s21_sprintf(str1, format, 4325), sprintf(str2, format, 4325));
+ck_assert_str_eq(str1, str2);
+#endif
+
+#test star_minus_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%*dq";
+ck_assert_int_eq(s21_sprintf(str1, format, -40, 9), sprintf(str2, format, -40, 9));
+ck_assert_str_eq(str1, str2);
+
+#test star_minus_1
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%*f";
+ck_assert_int_eq(s21_sprintf(str1, format, -40, 90.), sprintf(str2, format, -40, 90.));
+ck_assert_str_eq(str1, str2);
+
+#test star_minus_2
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%*Xd";
+ck_assert_int_eq(s21_sprintf(str1, format, -40, 85), sprintf(str2, format, -40, 85));
+ck_assert_str_eq(str1, str2);
+
+#test zero_0
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%013d";
+ck_assert_int_eq(s21_sprintf(str1, format, 40), sprintf(str2, format, 40));
+ck_assert_str_eq(str1, str2);
+
+#test zero_1
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%013d";
+ck_assert_int_eq(s21_sprintf(str1, format, -40), sprintf(str2, format, -40));
+ck_assert_str_eq(str1, str2);
+
+#test zero_3
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%03d";
+ck_assert_int_eq(s21_sprintf(str1, format, 4405), sprintf(str2, format, 4405));
+ck_assert_str_eq(str1, str2);
+
+#test zero_4
+char str1[BUFF_SIZE] = {0};
+char str2[BUFF_SIZE] = {0};
+char *format = "%0s";
+ck_assert_int_eq(s21_sprintf(str1, format, "er"), sprintf(str2, format, "er"));
+ck_assert_str_eq(str1, str2);
+
+
+#suite trim
+
+#test test_s21_trim_src_is_NULL
+    
+    char *src = s21_NULL;
+    char trim_chars[4] = "abc";
+    
+    char *str = s21_trim(src, trim_chars);
+    ck_assert_ptr_null(str);
+
+    if (str!= s21_NULL)
+        free(str);
+
+
+#test test_s21_trim_trim_chars_is_NULL
+    
+    char *trim_chars = s21_NULL;
+    char src[21] = " \n\t\v\f\rac \n\t\v\f\r";
+    char test[3] = "ac\0";
+    
+    char *str = s21_trim(src, trim_chars);
+    ck_assert_str_eq(str, test);
+
+    if (str!= s21_NULL)
+        free(str);
+
+#test test_s21_trim_trim_src_is_empty
+    
+    char *trim_chars = s21_NULL;
+    char src[33] = " \n\t\v\f\r43567890jhkhgf \n\t\v\f\r";
+    char test[15] = "43567890jhkhgf\0";
+    
+    char *str = s21_trim(src, trim_chars);
+    ck_assert_str_eq(str, test);
+
+    if (str!= s21_NULL)
+        free(str);
+
+#test test_s21_trim_src_is_empty
+    
+    char trim_chars[18] = "0123456789abcdefG\0";
+    char src[1] = "\0";
+    
+    char *str = s21_trim(src, trim_chars);
+    ck_assert_str_eq(str, src);
+
+    if (str!= s21_NULL)
+        free(str);
+
+#test test_s21_trim_no_overlap
+    
+    char src[128] = "abcdefghijklmnopqrstuvwxyz1234567890";
+    char trim_chars[128] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+    char *str = s21_trim(src, trim_chars);
+    ck_assert_str_eq(str, src);
+
+    if (str!= s21_NULL)
+        free(str);
+
+#test test_s21_trim_no_duplicate_and_in_the_beginning
+    
+    char src[122];
+    char trim_chars[27] = "zyxwvutsrqponmlkjihgfedcba";
+    char test[103];
+
+    for (int i = 0; i < 121; i++) 
+    {
+        src[i] = i+1;
+    }
+    src[121] = '\0';
+
+    for (int i = 0; i < 96; i++) 
+    {
+        test[i] = src[i];
+    }
+   
+    test[96] = '\0';
+    
+    
+    char *str = s21_trim(src, trim_chars);
+    ck_assert_str_eq(str, test);
+
+    if (str!= s21_NULL)
+        free(str);
+
+
+#test test_s21_trim_no_duplicate_and_in_the_end
+    
+    char src[91];
+    char trim_chars[27] = "ZYXWVUTSRQPONMLKJIHGFEDCBA";
+    char test[65];
+
+    for (int i = 0; i < 90; i++) 
+    {
+        src[i] = i+1;
+    }
+    src[90] = '\0';
+
+    for (int i = 0; i < 64; i++) 
+    {
+        test[i] = src[i];
+    }
+    test[64] = '\0';
+    
+    
+    char *str = s21_trim(src, trim_chars);
+    ck_assert_str_eq(str, test);
+
+    if (str!= s21_NULL)
+        free(str);
+
+
+
+#test test_s21_trim_src_with_duplicate
+    
+    char src[382];
+    char trim_chars[128];
+    char test[1] = "\0";
+    
+
+    for (int i = 0; i < 381; i++) 
+    {
+        src[i] = (i % 127) + 1;
+    }
+    src[381] = '\0';
+
+    for (int i = 0; i < 127; i++) 
+    {
+        trim_chars[i] = i+1;
+    }
+    trim_chars[127] = '\0';
+
+    
+    char *str = s21_trim(src, trim_chars);
+    ck_assert_str_eq(str, test);
+
+    if (str!= s21_NULL)
+        free(str);
+
+#test test_s21_trim_standart
+    
+    char src[] = "ABCDEFGHIJKLM01234567890NOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    char test[] = "abcdefghijklmnopqrstuvwxyz";
+    char trim_chars[] = "9876543210ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    
+    char *str = s21_trim(src, trim_chars);
+    ck_assert_str_eq(str, test);
+
+    if (str!= s21_NULL)
+        free(str);
+
+
+
+
+#suite strerror
+
+#test test_strerror
+    for (int i = -150; i <= 250; i++) {
+        const char *expected = strerror(i);
+        const char *result = s21_strerror(i);
+        ck_assert_str_eq(result, expected);
+  }
+
+#main-pre
+srunner_set_fork_status(sr, CK_NOFORK);
